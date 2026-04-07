@@ -51,7 +51,6 @@ alter table public.artists enable row level security;
 alter table public.songs enable row level security;
 alter table public.user_practice_list enable row level security;
 
--- Artists/Songs herkese açık okunabilir (anon + authenticated)
 create policy "Artists are readable by everyone"
   on public.artists for select
   using (true);
@@ -60,7 +59,6 @@ create policy "Songs are readable by everyone"
   on public.songs for select
   using (true);
 
--- Practice list sadece ilgili kullanıcıya açık
 create policy "Users can read own practice list"
   on public.user_practice_list for select
   using (auth.uid() = user_id);

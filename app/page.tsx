@@ -1,20 +1,9 @@
 import Link from 'next/link';
 import { ArtistCard } from '@/components/ui/ArtistCard';
 import { artists } from '@/data/mockData';
-import { createClient } from '@/utils/supabase/server';
 
-export default async function HomePage() {
+export default function HomePage() {
   const featuredArtists = artists.slice(0, 3);
-
-  let todoNames: string[] = [];
-
-  try {
-    const supabase = await createClient();
-    const { data: todos } = await supabase.from('todos').select('id,name').limit(3);
-    todoNames = (todos ?? []).map((todo: { name: string }) => todo.name);
-  } catch {
-    // Opsiyonel demo bölüm; hata olursa ana sayfa akışı bozulmaz.
-  }
 
   return (
     <main className="container-base py-12 sm:py-16">
@@ -43,17 +32,6 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
-
-      {todoNames.length > 0 ? (
-        <section className="mt-8 surface p-6">
-          <h2 className="text-lg font-semibold text-white">Supabase Örnek Todo Kayıtları</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-300">
-            {todoNames.map((todoName) => (
-              <li key={todoName}>{todoName}</li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
 
       <section className="mt-12">
         <h2 className="text-2xl font-semibold text-white">Öne Çıkan Sanatçılar</h2>
