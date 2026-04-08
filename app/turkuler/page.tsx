@@ -1,59 +1,57 @@
-'use client';
-
-import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { SongFilters } from '@/components/songs/SongFilters';
-import { PaginatedSongList } from '@/components/songs/PaginatedSongList';
 import { songs } from '@/data/mockData';
+import { getCurrentUserContext } from '@/utils/auth/server';
+import { createClient } from '@/utils/supabase/server';
 import { SongType } from '@/types/domain';
+import { TurkulerClientPage } from '@/components/songs/TurkulerClientPage';
 
-export default function TurkulerPage() {
-  const searchParams = useSearchParams();
-  const [query, setQuery] = useState(searchParams.get('q') ?? '');
-  const [artistFilter, setArtistFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState<SongType | 'all'>('all');
+type PracticeSongRow = {
+  songs:
+    | {
+        title: string;
+        artist: string;
+        type: SongType;
+      }
+    | Array<{
+        title: string;
+        artist: string;
+        type: SongType;
+      }>
+    | null;
+};
 
-  useEffect(() => {
-    setQuery(searchParams.get('q') ?? '');
-  }, [searchParams]);
+export default async function TurkulerPage() {
+  const auth = await getCurrentUserContext();
+  let initialPracticeSongIds: string[] = [];
 
-  const artists = useMemo(() => Array.from(new Set(songs.map((song) => song.artist))), []);
+  if (auth.mode === 'supabase' && auth.user) {
+    const supabase = await createClient();
+    const { data: practiceItems } = await supabase
+      .from('user_practice_list')
+      .select(
+        `
+        songs (title, artist, type)
+      `,
+      )
+      .eq('user_id', auth.user.id);
 
-  const filteredSongs = useMemo(() => {
-    return songs.filter((song) => {
-      const matchesQuery = song.title.toLocaleLowerCase('tr-TR').includes(query.toLocaleLowerCase('tr-TR'));
-      const matchesArtist = artistFilter === 'all' || song.artist === artistFilter;
-      const matchesType = typeFilter === 'all' || song.type === typeFilter;
-      return matchesQuery && matchesArtist && matchesType;
-    });
-  }, [query, artistFilter, typeFilter]);
+    initialPracticeSongIds = ((practiceItems ?? []) as PracticeSongRow[])
+      .map((item) => (Array.isArray(item.songs) ? item.songs[0] : item.songs))
+      .filter((song): song is { title: string; artist: string; type: SongType } => Boolean(song))
+      .map((practiceSong) =>
+        songs.find(
+          (catalogSong) =>
+            catalogSong.title === practiceSong.title &&
+            catalogSong.artist === practiceSong.artist &&
+            catalogSong.type === practiceSong.type,
+        )?.id,
+      )
+      .filter((songId): songId is string => Boolean(songId));
+  }
 
   return (
-    <main className="container-base py-12 sm:py-16">
-      <p className="eyebrow">Repertuvar</p>
-      <h1 className="page-title mt-4 text-3xl sm:text-4xl">Türküler</h1>
-      <p className="muted-copy mt-4 leading-7">Tüm sanatçıların eserleri tek ekranda.</p>
-
-      <div className="mt-6">
-        <SongFilters
-          query={query}
-          artistFilter={artistFilter}
-          typeFilter={typeFilter}
-          artists={artists}
-          onQueryChange={setQuery}
-          onArtistChange={setArtistFilter}
-          onTypeChange={setTypeFilter}
-        />
-      </div>
-
-      <section className="mt-6">
-        <PaginatedSongList
-          songs={filteredSongs}
-          itemsPerPage={20}
-          emptyTitle="Sonuç bulunamadı"
-          emptyDescription="Arama kelimesini veya filtreleri değiştirerek tekrar deneyin."
-        />
-      </section>
-    </main>
+    <TurkulerClientPage
+      authMode={auth.mode}
+      initialPracticeSongIds={initialPracticeSongIds}
+    />
   );
 }

@@ -11,9 +11,12 @@ type SongFiltersProps = {
   artistFilter: string;
   typeFilter: SongType | 'all';
   artists: string[];
+  showUnlistedOnly?: boolean;
+  canUsePracticeFilter?: boolean;
   onQueryChange: (value: string) => void;
   onArtistChange: (value: string) => void;
   onTypeChange: (value: SongType | 'all') => void;
+  onShowUnlistedOnlyChange?: (value: boolean) => void;
 };
 
 export function SongFilters({
@@ -21,9 +24,12 @@ export function SongFilters({
   artistFilter,
   typeFilter,
   artists,
+  showUnlistedOnly = false,
+  canUsePracticeFilter = false,
   onQueryChange,
   onArtistChange,
   onTypeChange,
+  onShowUnlistedOnlyChange,
 }: SongFiltersProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -98,6 +104,32 @@ export function SongFilters({
           </select>
         </label>
       </div>
+
+      {canUsePracticeFilter && onShowUnlistedOnlyChange ? (
+        <div className="mt-5 border-t border-border/80 pt-4">
+          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border/80 bg-surface2/70 px-4 py-3 transition hover:border-stone-500/60 hover:bg-surface2">
+            <span className="relative mt-0.5">
+              <input
+                type="checkbox"
+                checked={showUnlistedOnly}
+                onChange={(event) => onShowUnlistedOnlyChange(event.target.checked)}
+                className="peer sr-only"
+              />
+              <span className="flex h-5 w-5 items-center justify-center rounded-md border border-border bg-surface text-transparent transition peer-checked:border-accent peer-checked:bg-accent peer-checked:text-base">
+                ✓
+              </span>
+            </span>
+            <span className="space-y-1">
+              <span className="block text-sm font-medium text-text">
+                Çalışma listemde olmayan türküleri göster
+              </span>
+              <span className="block text-sm text-muted">
+                Repertuvarda henüz listene eklemediğin parçaları hızlıca ayıkla.
+              </span>
+            </span>
+          </label>
+        </div>
+      ) : null}
     </section>
   );
 }

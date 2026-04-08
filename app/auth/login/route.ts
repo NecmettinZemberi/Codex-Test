@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { isGoogleAuthEnabled } from '@/utils/auth/server';
 
 export async function GET(request: NextRequest) {
+  if (!isGoogleAuthEnabled()) {
+    return NextResponse.redirect(
+      new URL('/login?error=google_auth_not_configured', request.url),
+    );
+  }
+
   const next = request.nextUrl.searchParams.get('next') ?? '/dashboard';
   const redirectTo = new URL('/auth/callback', request.url);
   redirectTo.searchParams.set('next', next);

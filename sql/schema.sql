@@ -29,10 +29,14 @@ create table if not exists public.user_practice_list (
   status text not null check (status in ('planlandi', 'siraya_alindi', 'calisiliyor', 'tamamlandi')),
   sort_order integer not null default 1,
   personal_note text not null default '',
+  target_date date,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (user_id, song_id)
 );
+
+alter table public.user_practice_list
+  add column if not exists target_date date;
 
 create or replace function public.set_updated_at()
 returns trigger as $$

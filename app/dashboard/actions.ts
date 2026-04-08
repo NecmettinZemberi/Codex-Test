@@ -3,8 +3,32 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { songs as catalogSongs } from '@/data/mockData';
-import { createClient } from '@/utils/supabase/server';
+import { getCurrentUserContext } from '@/utils/auth/server';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { createClient } from '@/utils/supabase/server';
+
+async function getSupabaseUser() {
+  const auth = await getCurrentUserContext();
+
+  if (auth.mode === 'demo') {
+    return { mode: 'demo' as const };
+  }
+
+  if (!auth.isAuthenticated || !auth.user) {
+    redirect('/login?next=/dashboard');
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login?next=/dashboard');
+  }
+
+  return { mode: 'supabase' as const, supabase, user };
+}
 
 async function ensureDatabaseSong(catalogSongId: string) {
   const catalogSong = catalogSongs.find((song) => song.id === catalogSongId);
@@ -13,8 +37,16 @@ async function ensureDatabaseSong(catalogSongId: string) {
     return { error: 'song_not_found' as const };
   }
 
-  const supabase = await createClient();
-  const { data: existingSongs, error: existingSongError } = await supabase
+  const authUser = await getSupabaseUser();
+  if (authUser.mode === 'demo') {
+    return { error: 'demo_add_redirect' as const };
+  }
+
+  const { supabase } = authUser;
+  const admin = createAdminClient();
+  const lookupClient = admin ?? supabase;
+
+  const { data: existingSongs, error: existingSongError } = await lookupClient
     .from('songs')
     .select('id')
     .eq('title', catalogSong.title)
@@ -23,6 +55,12 @@ async function ensureDatabaseSong(catalogSongId: string) {
     .limit(1);
 
   if (existingSongError) {
+    const message = existingSongError.message.toLowerCase();
+
+    if (message.includes('relation') || message.includes('does not exist')) {
+      return { error: 'catalog_schema_required' as const };
+    }
+
     return { error: 'catalog_lookup_failed' as const };
   }
 
@@ -31,7 +69,6 @@ async function ensureDatabaseSong(catalogSongId: string) {
     return { songId: existingSongId };
   }
 
-  const admin = createAdminClient();
   if (!admin) {
     return { error: 'catalog_sync_required' as const };
   }
@@ -59,19 +96,22 @@ async function ensureDatabaseSong(catalogSongId: string) {
 
 export async function addPracticeItem(formData: FormData) {
   const catalogSongId = String(formData.get('song_id') ?? '');
+  const redirectTo = String(formData.get('redirect_to') ?? '/dashboard');
   if (!catalogSongId) return;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const authUser = await getSupabaseUser();
 
-  if (!user) {
-    redirect('/login');
+  if (authUser.mode === 'demo') {
+    redirect(`/dashboard?tab=practice&demo_add=${encodeURIComponent(catalogSongId)}`);
   }
 
+  const { supabase, user } = authUser;
   const resolvedSong = await ensureDatabaseSong(catalogSongId);
   if ('error' in resolvedSong) {
+    if (resolvedSong.error === 'demo_add_redirect') {
+      redirect(`/dashboard?tab=practice&demo_add=${encodeURIComponent(catalogSongId)}`);
+    }
+
     redirect(`/dashboard?error=${resolvedSong.error}`);
   }
 
@@ -100,6 +140,7 @@ export async function addPracticeItem(formData: FormData) {
     status: 'planlandi',
     sort_order: (maxOrderData?.sort_order ?? 0) + 1,
     personal_note: '',
+    target_date: null,
   });
 
   if (insertError) {
@@ -107,20 +148,64 @@ export async function addPracticeItem(formData: FormData) {
   }
 
   revalidatePath('/dashboard');
+  revalidatePath('/turkuler');
+  if (redirectTo.startsWith('/')) {
+    redirect(redirectTo);
+  }
 }
 
-export async function updatePracticeStatus(formData: FormData) {
+export async function savePracticeItem(formData: FormData) {
   const itemId = String(formData.get('item_id') ?? '');
   const status = String(formData.get('status') ?? 'planlandi');
+  const personalNote = String(formData.get('personal_note') ?? '').trim();
+  const targetDateValue = String(formData.get('target_date') ?? '').trim();
 
   const allowed = ['planlandi', 'siraya_alindi', 'calisiliyor', 'tamamlandi'];
   if (!itemId || !allowed.includes(status)) return;
 
-  const supabase = await createClient();
-  await supabase
+  const authUser = await getSupabaseUser();
+  if (authUser.mode === 'demo') {
+    redirect('/dashboard?tab=practice');
+  }
+
+  const { supabase, user } = authUser;
+  const { error } = await supabase
     .from('user_practice_list')
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', itemId);
+    .update({
+      status,
+      personal_note: personalNote,
+      target_date: targetDateValue || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', itemId)
+    .eq('user_id', user.id);
+
+  if (error) {
+    redirect('/dashboard?error=practice_update_failed');
+  }
+
+  revalidatePath('/dashboard');
+}
+
+export async function deletePracticeItem(formData: FormData) {
+  const itemId = String(formData.get('item_id') ?? '');
+  if (!itemId) return;
+
+  const authUser = await getSupabaseUser();
+  if (authUser.mode === 'demo') {
+    redirect('/dashboard?tab=practice');
+  }
+
+  const { supabase, user } = authUser;
+  const { error } = await supabase
+    .from('user_practice_list')
+    .delete()
+    .eq('id', itemId)
+    .eq('user_id', user.id);
+
+  if (error) {
+    redirect('/dashboard?error=practice_delete_failed');
+  }
 
   revalidatePath('/dashboard');
 }

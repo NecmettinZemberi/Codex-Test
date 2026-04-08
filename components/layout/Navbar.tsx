@@ -7,6 +7,10 @@ import { artists, songs } from '@/data/mockData';
 import { SongSearchSuggestions } from '@/components/songs/SongSearchSuggestions';
 import { getSearchHref, getSongHref } from '@/lib/utils';
 
+type NavbarProps = {
+  authMode?: 'anonymous' | 'demo' | 'supabase';
+};
+
 const navLinks = [
   { label: 'Türküler', href: '/turkuler' },
   { label: 'Sanatçılar', href: '/artists' },
@@ -22,7 +26,67 @@ function getLinkClass(pathname: string, href: string) {
     : 'text-sm text-muted transition hover:text-text';
 }
 
-export function Navbar() {
+function AuthArea({ authMode }: { authMode: NavbarProps['authMode'] }) {
+  if (authMode === 'supabase') {
+    return (
+      <div className="flex items-center gap-2">
+        <Link href="/dashboard" className="button-primary px-4 py-2">
+          Çalışma listem
+        </Link>
+        <form action="/auth/logout" method="post">
+          <button type="submit" className="button-secondary px-4 py-2">
+            Çıkış
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  if (authMode === 'demo') {
+    return (
+      <div className="flex items-center gap-2">
+        <Link href="/dashboard" className="button-primary px-4 py-2">
+          Çalışma listem
+        </Link>
+        <form action="/api/mock-logout" method="get">
+          <button type="submit" className="button-secondary px-4 py-2">
+            Çıkış
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <Link href={authHref} className="button-primary px-4 py-2">
+      Giriş yap
+    </Link>
+  );
+}
+
+function HeaderAction({ authMode }: { authMode: NavbarProps['authMode'] }) {
+  if (authMode === 'supabase' || authMode === 'demo') {
+    return (
+      <Link
+        href="/dashboard"
+        className="button-primary px-3 py-2 text-[11px] uppercase tracking-[0.16em]"
+      >
+        Çalışma listem
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      href={authHref}
+      className="rounded-lg border border-border bg-accent px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-base transition hover:bg-stone-300"
+    >
+      Giriş
+    </Link>
+  );
+}
+
+export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -55,7 +119,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-base/90 backdrop-blur-sm">
       <nav className="container-base" aria-label="Ana menü">
-        <div className="grid h-16 grid-cols-[48px_1fr_64px] items-center md:hidden">
+        <div className="grid h-16 grid-cols-[48px_1fr_auto] items-center gap-3 md:hidden">
           <button
             type="button"
             aria-expanded={menuOpen}
@@ -90,12 +154,9 @@ export function Navbar() {
             BozlakLab
           </Link>
 
-          <Link
-            href={authHref}
-            className="justify-self-end rounded-lg border border-border bg-accent px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-base transition hover:bg-stone-300"
-          >
-            Giriş
-          </Link>
+          <div className="justify-self-end">
+            <HeaderAction authMode={authMode} />
+          </div>
         </div>
 
         <div
@@ -115,12 +176,7 @@ export function Navbar() {
                 <p className="eyebrow">Gezinme</p>
                 <p className="mt-2 font-display text-3xl font-semibold text-text">Arşiv menüsü</p>
               </div>
-              <Link
-                href={authHref}
-                className="button-primary shrink-0 px-4 py-2 text-[11px] uppercase tracking-[0.16em]"
-              >
-                Giriş yap
-              </Link>
+              <AuthArea authMode={authMode} />
             </div>
 
             <form
@@ -252,9 +308,9 @@ export function Navbar() {
             </div>
           </form>
 
-          <Link href={authHref} className="button-primary justify-self-end px-4 py-2">
-            Giriş yap
-          </Link>
+          <div className="justify-self-end">
+            <AuthArea authMode={authMode} />
+          </div>
         </div>
       </nav>
     </header>

@@ -26,6 +26,21 @@ export function normalizeForSearch(value: string) {
     .trim();
 }
 
+export function slugify(value: string) {
+  return normalizeForSearch(value)
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
+
+export function getSongSlug(song: Pick<Song, 'title' | 'artist'>) {
+  return `${slugify(song.artist)}--${slugify(song.title)}`;
+}
+
+export function getSongDetailHref(song: Pick<Song, 'title' | 'artist'>) {
+  return `/turkuler/${getSongSlug(song)}`;
+}
+
 export function getSongSuggestions(items: Song[], query: string, limit = 6) {
   const normalizedQuery = normalizeForSearch(query);
 
@@ -76,7 +91,7 @@ export function getArtistByName(name: string) {
   return artists.find((artist) => artist.name === name) ?? null;
 }
 
-export function getSongHref(song: Song) {
+export function getSongHref(song: Pick<Song, 'title' | 'artist'>) {
   const artist = getArtistByName(song.artist);
 
   if (!artist) {
