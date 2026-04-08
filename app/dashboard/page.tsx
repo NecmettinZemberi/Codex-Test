@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { AuthButtons } from '@/components/ui/AuthButtons';
+import { songTypeLabels } from '@/lib/utils';
 import { addPracticeItem, updatePracticeStatus } from './actions';
 
 const statuses = [
@@ -61,7 +62,7 @@ export default async function DashboardPage() {
             <option value="">Parça seç</option>
             {(songs ?? []).map((song) => (
               <option key={song.id} value={song.id}>
-                {song.title} - {song.artist} ({song.type})
+                {song.title} - {song.artist} ({songTypeLabels[song.type]})
               </option>
             ))}
           </select>
@@ -90,7 +91,7 @@ export default async function DashboardPage() {
                 <h3 className="text-lg font-semibold text-white">
                   {song.title} <span className="text-sm text-slate-400">({song.artist})</span>
                 </h3>
-                <p className="mt-2 text-sm text-slate-400">Tür: {song.type}</p>
+                <p className="mt-2 text-sm text-slate-400">Tür: {songTypeLabels[song.type]}</p>
 
                 <form action={updatePracticeStatus} className="mt-4 flex items-center gap-3">
                   <input type="hidden" name="item_id" value={item.id} />
