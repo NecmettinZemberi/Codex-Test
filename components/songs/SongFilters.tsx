@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { songs } from '@/data/mockData';
 import { SongSearchSuggestions } from '@/components/songs/SongSearchSuggestions';
 import { getSongHref } from '@/lib/utils';
@@ -25,7 +25,13 @@ export function SongFilters({
   onArtistChange,
   onTypeChange,
 }: SongFiltersProps) {
+  const pathname = usePathname();
   const router = useRouter();
+
+  const clearQuery = () => {
+    onQueryChange('');
+    router.replace(pathname);
+  };
 
   return (
     <section className="surface p-5">
@@ -44,7 +50,7 @@ export function SongFilters({
             {query ? (
               <button
                 type="button"
-                onClick={() => onQueryChange('')}
+                onClick={clearQuery}
                 aria-label="Aramayı temizle"
                 className="absolute right-3 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-base text-muted transition hover:bg-surface2 hover:text-text"
               >
