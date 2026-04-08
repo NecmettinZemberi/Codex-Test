@@ -56,7 +56,7 @@ export function PaginatedSongList({
 
   return (
     <div>
-      <div className="space-y-4">
+      <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
         {visibleSongs.map((song) => (
           <SongCard key={song.id} song={song} />
         ))}

@@ -1,24 +1,56 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
-import { artists } from '@/data/mockData';
+import { FormEvent, useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { artists, songs } from '@/data/mockData';
+import { SongSearchSuggestions } from '@/components/songs/SongSearchSuggestions';
+import { getSearchHref, getSongHref } from '@/lib/utils';
 
-const staticLinks = [
-  { label: 'Anasayfa', href: '/' },
+const navLinks = [
   { label: 'Türküler', href: '/turkuler' },
+  { label: 'Sanatçılar', href: '/artists' },
 ];
 
 const authHref = '/auth/login?next=/dashboard';
 
+function getLinkClass(pathname: string, href: string) {
+  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+
+  return isActive
+    ? 'text-sm text-text'
+    : 'text-sm text-muted transition hover:text-text';
+}
+
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [desktopQuery, setDesktopQuery] = useState('');
+  const [mobileQuery, setMobileQuery] = useState('');
 
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
+
+  const handleSearch = (
+    event: FormEvent<HTMLFormElement>,
+    query: string,
+    reset?: () => void,
+  ) => {
+    event.preventDefault();
+
+    const trimmed = query.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    if (reset) {
+      reset();
+    }
+
+    router.push(getSearchHref(trimmed));
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-base/90 backdrop-blur-sm">
@@ -70,7 +102,7 @@ export function Navbar() {
           id="mobile-menu"
           aria-hidden={!menuOpen}
           className={`overflow-hidden md:hidden transition-[max-height,opacity,padding] duration-300 ease-out ${
-            menuOpen ? 'max-h-[75vh] pb-4 opacity-100' : 'max-h-0 pb-0 opacity-0'
+            menuOpen ? 'max-h-[85vh] pb-4 opacity-100' : 'max-h-0 pb-0 opacity-0'
           }`}
         >
           <div
@@ -91,8 +123,52 @@ export function Navbar() {
               </Link>
             </div>
 
+            <form
+              onSubmit={(event) =>
+                handleSearch(event, mobileQuery, () => {
+                  setMobileQuery('');
+                  setMenuOpen(false);
+                })
+              }
+              className="mb-5"
+            >
+              <label className="relative block text-sm">
+                <span className="mb-2 block text-muted">Türkü ara</span>
+                <div className="relative">
+                  <input
+                    value={mobileQuery}
+                    onChange={(event) => setMobileQuery(event.target.value)}
+                    className="field-input pr-10"
+                    placeholder="Türkü adı yaz"
+                  />
+                  {mobileQuery ? (
+                    <button
+                      type="button"
+                      onClick={() => setMobileQuery('')}
+                      aria-label="Aramayı temizle"
+                      className="absolute right-3 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-base text-muted transition hover:bg-surface2 hover:text-text"
+                    >
+                      ×
+                    </button>
+                  ) : null}
+                </div>
+                <SongSearchSuggestions
+                  songs={songs}
+                  query={mobileQuery}
+                  onSelect={(song) => {
+                    setMobileQuery(song.title);
+                    setMenuOpen(false);
+                    router.push(getSongHref(song));
+                  }}
+                />
+              </label>
+              <button type="submit" className="button-secondary mt-3 w-full px-4 py-2">
+                Sanatçı sayfasında ara
+              </button>
+            </form>
+
             <div className="space-y-2">
-              {staticLinks.map((link) => (
+              {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -121,36 +197,62 @@ export function Navbar() {
           </div>
         </div>
 
-        <div className="hidden min-h-[4.5rem] items-center gap-6 py-4 md:flex">
-          <Link href="/" className="mr-2 font-display text-4xl font-semibold leading-none text-text">
+        <div className="hidden min-h-[4.5rem] items-center gap-6 py-4 lg:grid lg:grid-cols-[auto_auto_minmax(320px,420px)_auto]">
+          <Link href="/" className="font-display text-4xl font-semibold leading-none text-text">
             BozlakLab
           </Link>
 
           <div className="flex items-center gap-5">
-            {staticLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm text-muted transition hover:text-text"
-              >
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href} className={getLinkClass(pathname, link.href)}>
                 {link.label}
               </Link>
             ))}
           </div>
 
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
-            {artists.map((artist) => (
-              <Link
-                key={artist.id}
-                href={`/artists/${artist.slug}`}
-                className="text-sm text-muted transition hover:text-text"
-              >
-                {artist.name}
-              </Link>
-            ))}
-          </div>
+          <form onSubmit={(event) => handleSearch(event, desktopQuery)} className="w-full">
+            <label className="sr-only" htmlFor="global-song-search">
+              Türkü ara
+            </label>
 
-          <Link href={authHref} className="button-primary ml-auto shrink-0 px-4 py-2">
+            <div className="relative">
+              <div className="flex items-center gap-2">
+                <div className="relative min-w-0 flex-1">
+                  <input
+                    id="global-song-search"
+                    value={desktopQuery}
+                    onChange={(event) => setDesktopQuery(event.target.value)}
+                    className="field-input pr-10"
+                    placeholder="Türkü ara"
+                  />
+                  {desktopQuery ? (
+                    <button
+                      type="button"
+                      onClick={() => setDesktopQuery('')}
+                      aria-label="Aramayı temizle"
+                      className="absolute right-3 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-base text-muted transition hover:bg-surface2 hover:text-text"
+                    >
+                      ×
+                    </button>
+                  ) : null}
+                </div>
+                <button type="submit" className="button-secondary shrink-0 px-4 py-2">
+                  Ara
+                </button>
+              </div>
+
+              <SongSearchSuggestions
+                songs={songs}
+                query={desktopQuery}
+                onSelect={(song) => {
+                  setDesktopQuery(song.title);
+                  router.push(getSongHref(song));
+                }}
+              />
+            </div>
+          </form>
+
+          <Link href={authHref} className="button-primary justify-self-end px-4 py-2">
             Giriş yap
           </Link>
         </div>

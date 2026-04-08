@@ -1,15 +1,28 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { artists, songs } from '@/data/mockData';
-import { PaginatedSongList } from '@/components/songs/PaginatedSongList';
+import { ArtistSongBrowser } from '@/components/songs/ArtistSongBrowser';
+import type { SongType } from '@/types/domain';
 
 type ArtistPageProps = {
   params: {
     slug: string;
   };
+  searchParams?: {
+    q?: string;
+    type?: string;
+  };
 };
 
-export default function ArtistPage({ params }: ArtistPageProps) {
+function getInitialType(value?: string): SongType | 'all' {
+  if (value === 'bozlak' || value === 'turku' || value === 'uzun hava') {
+    return value;
+  }
+
+  return 'all';
+}
+
+export default function ArtistPage({ params, searchParams }: ArtistPageProps) {
   const artist = artists.find((item) => item.slug === params.slug);
 
   if (!artist) {
@@ -39,14 +52,11 @@ export default function ArtistPage({ params }: ArtistPageProps) {
 
       <section className="mt-10">
         <h2 className="section-title">Parçalar</h2>
-        <div className="mt-5">
-          <PaginatedSongList
-            songs={artistSongs}
-            itemsPerPage={20}
-            emptyTitle="Henüz parça bulunamadı"
-            emptyDescription="Bu sanatçı için eklenecek repertuvar burada görünecek."
-          />
-        </div>
+        <ArtistSongBrowser
+          songs={artistSongs}
+          initialQuery={searchParams?.q ?? ''}
+          initialType={getInitialType(searchParams?.type)}
+        />
       </section>
     </main>
   );

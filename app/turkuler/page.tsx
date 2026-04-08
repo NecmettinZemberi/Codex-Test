@@ -1,21 +1,27 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { SongFilters } from '@/components/songs/SongFilters';
 import { PaginatedSongList } from '@/components/songs/PaginatedSongList';
 import { songs } from '@/data/mockData';
 import { SongType } from '@/types/domain';
 
 export default function TurkulerPage() {
-  const [query, setQuery] = useState('');
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState(searchParams.get('q') ?? '');
   const [artistFilter, setArtistFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState<SongType | 'all'>('all');
+
+  useEffect(() => {
+    setQuery(searchParams.get('q') ?? '');
+  }, [searchParams]);
 
   const artists = useMemo(() => Array.from(new Set(songs.map((song) => song.artist))), []);
 
   const filteredSongs = useMemo(() => {
     return songs.filter((song) => {
-      const matchesQuery = song.title.toLowerCase().includes(query.toLowerCase());
+      const matchesQuery = song.title.toLocaleLowerCase('tr-TR').includes(query.toLocaleLowerCase('tr-TR'));
       const matchesArtist = artistFilter === 'all' || song.artist === artistFilter;
       const matchesType = typeFilter === 'all' || song.type === typeFilter;
       return matchesQuery && matchesArtist && matchesType;
