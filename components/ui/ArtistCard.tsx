@@ -8,7 +8,7 @@ type ArtistCardProps = {
 
 export function ArtistCard({ artist }: ArtistCardProps) {
   return (
-    <article className="surface group overflow-hidden">
+    <article className="surface group flex h-full flex-col overflow-hidden">
       <Link
         href={`/artists/${artist.slug}`}
         className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
@@ -24,7 +24,7 @@ export function ArtistCard({ artist }: ArtistCardProps) {
         </div>
       </Link>
 
-      <div className="bg-gradient-to-b from-surface to-surface2 p-5">
+      <div className="flex flex-1 flex-col bg-gradient-to-b from-surface to-surface2 p-5">
         <h3 className="font-display text-3xl font-semibold leading-none text-text">
           <Link
             href={`/artists/${artist.slug}`}
@@ -33,7 +33,9 @@ export function ArtistCard({ artist }: ArtistCardProps) {
             {artist.name}
           </Link>
         </h3>
-        <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted">{artist.short_bio}</p>
+
+        <p className="mt-3 flex-1 text-sm leading-6 text-muted">{artist.short_bio}</p>
+
         <Link
           href={`/artists/${artist.slug}`}
           className="mt-5 inline-flex text-sm font-medium text-accent transition hover:text-warm"

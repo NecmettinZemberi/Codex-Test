@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { BaglamaIcon } from '@/components/ui/BaglamaIcon';
 import { songs } from '@/data/mockData';
 import {
   getSongById,
@@ -21,6 +22,15 @@ type PracticeBoardProps = {
 
 const storageKey = 'bozlaklab-demo-practice-list';
 
+const sortedSongs = [...songs].sort((left, right) => {
+  const titleCompare = left.title.localeCompare(right.title, 'tr');
+  if (titleCompare !== 0) {
+    return titleCompare;
+  }
+
+  return left.artist.localeCompare(right.artist, 'tr');
+});
+
 const statusOptions: Array<{ value: PracticeStatus | 'all'; label: string }> = [
   { value: 'all', label: 'Tüm durumlar' },
   { value: 'planlandi', label: 'Planlandı' },
@@ -36,7 +46,7 @@ export function PracticeBoard({
   activeTab = 'practice',
 }: PracticeBoardProps) {
   const [items, setItems] = useState(initialItems);
-  const [selectedSongId, setSelectedSongId] = useState(songs[0]?.id ?? '');
+  const [selectedSongId, setSelectedSongId] = useState(sortedSongs[0]?.id ?? '');
   const [statusFilter, setStatusFilter] = useState<PracticeStatus | 'all'>(initialStatusFilter);
 
   useEffect(() => {
@@ -158,7 +168,7 @@ export function PracticeBoard({
         </p>
 
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
-          {songs.map((song) => (
+          {sortedSongs.map((song) => (
             <article key={song.id} className="rounded-xl border border-border bg-surface2 p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -192,8 +202,11 @@ export function PracticeBoard({
                       ]);
                     }
                   }}
-                  className="button-primary px-4 py-2 text-sm"
+                  className="inline-flex items-center gap-2 rounded-lg border border-stone-200/85 bg-stone-100 px-3.5 py-2 text-[13px] font-semibold text-stone-950 transition duration-200 hover:-translate-y-[1px] hover:border-stone-300 hover:bg-stone-200 hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)]"
                 >
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-stone-950 text-stone-100">
+                    <BaglamaIcon />
+                  </span>
                   Ekle
                 </button>
               </div>
@@ -244,7 +257,7 @@ export function PracticeBoard({
               onChange={(event) => setSelectedSongId(event.target.value)}
               className="field-input"
             >
-              {songs.map((song) => (
+              {sortedSongs.map((song) => (
                 <option key={song.id} value={song.id}>
                   {song.title} - {song.artist} ({songTypeLabels[song.type]})
                 </option>

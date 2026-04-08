@@ -227,6 +227,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const filteredPracticeItems = practiceItems.filter(
     (item) => statusFilter === 'all' || item.status === statusFilter,
   );
+  const sortedCatalogSongs = [...catalogSongs].sort((left, right) => {
+    const titleCompare = left.title.localeCompare(right.title, 'tr');
+    if (titleCompare !== 0) {
+      return titleCompare;
+    }
+
+    return left.artist.localeCompare(right.artist, 'tr');
+  });
 
   return (
     <main className="container-base py-10 sm:py-16">
@@ -276,7 +284,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                   <form action={addPracticeItem} className="flex flex-col gap-3 sm:flex-row">
                     <select name="song_id" className="field-input min-w-0" required>
                       <option value="">Parça seç</option>
-                      {catalogSongs.map((song) => (
+                      {sortedCatalogSongs.map((song) => (
                         <option key={song.id} value={song.id}>
                           {song.title} - {song.artist} ({songTypeLabels[song.type]})
                         </option>
