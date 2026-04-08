@@ -32,6 +32,7 @@ export type UserPracticeItem = {
   status: PracticeStatus;
   sort_order: number;
   personal_note: string;
+  target_date: string | null;
   created_at: string;
   updated_at: string;
 };

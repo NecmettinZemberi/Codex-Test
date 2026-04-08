@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/components/layout/Navbar';
+import { getCurrentUserContext } from '@/utils/auth/server';
 
 const inter = Inter({
   subsets: ['latin', 'latin-ext'],
@@ -22,15 +23,17 @@ export const metadata: Metadata = {
     'Neşet Ertaş tavrı saz çalışanlar için sanatçı odaklı türkü ve çalışma listesi platformu.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const auth = await getCurrentUserContext();
+
   return (
     <html lang="tr">
       <body className={`${inter.variable} ${cormorant.variable}`}>
-        <Navbar />
+        <Navbar authMode={auth.mode} />
         {children}
       </body>
     </html>
