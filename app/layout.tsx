@@ -21,6 +21,11 @@ export const metadata: Metadata = {
   title: 'Bozlak Çalışma Platformu',
   description:
     'Neşet Ertaş tavrı saz çalışanlar için sanatçı odaklı türkü ve çalışma listesi platformu.',
+  icons: {
+    icon: '/bozlaklabfavicon.png',
+    shortcut: '/bozlaklabfavicon.png',
+    apple: '/bozlaklabfavicon.png',
+  },
 };
 
 export default async function RootLayout({

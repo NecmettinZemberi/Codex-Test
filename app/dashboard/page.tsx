@@ -28,8 +28,9 @@ type DashboardTab = 'all-songs' | 'practice' | 'account';
 type PracticeItemRow = {
   id: string;
   status: PracticeStatus;
+  sort_order?: number;
   personal_note: string;
-  target_date: string | null;
+  target_date?: string | null;
   songs:
     | {
         id: string;
@@ -180,7 +181,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   }
 
   const supabase = await createClient();
-  const { data: practiceItems } = await supabase
+  const initialPracticeQuery = await supabase
     .from('user_practice_list')
     .select(
       `
@@ -195,7 +196,33 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     .eq('user_id', auth.user?.id)
     .order('sort_order', { ascending: true });
 
-  const filteredPracticeItems = ((practiceItems ?? []) as PracticeItemRow[]).filter(
+  let practiceItems = (initialPracticeQuery.data as PracticeItemRow[] | null) ?? [];
+  let practiceItemsError = initialPracticeQuery.error;
+
+  const isTargetDateMissing =
+    (practiceItemsError?.code === '42703' || practiceItemsError?.code === 'PGRST204') &&
+    (practiceItemsError.message ?? '').toLowerCase().includes('target_date');
+
+  if (isTargetDateMissing) {
+    const fallback = await supabase
+      .from('user_practice_list')
+      .select(
+        `
+        id,
+        status,
+        sort_order,
+        personal_note,
+        songs (id, title, artist, type)
+      `,
+      )
+      .eq('user_id', auth.user?.id)
+      .order('sort_order', { ascending: true });
+
+    practiceItems = (fallback.data as PracticeItemRow[] | null) ?? [];
+    practiceItemsError = fallback.error;
+  }
+
+  const filteredPracticeItems = practiceItems.filter(
     (item) => statusFilter === 'all' || item.status === statusFilter,
   );
 

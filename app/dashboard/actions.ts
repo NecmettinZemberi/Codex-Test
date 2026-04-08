@@ -7,6 +7,17 @@ import { getCurrentUserContext } from '@/utils/auth/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { createClient } from '@/utils/supabase/server';
 
+function isTargetDateSchemaCacheError(error: { code?: string; message?: string } | null) {
+  if (!error) {
+    return false;
+  }
+
+  return (
+    error.code === 'PGRST204' &&
+    (error.message ?? '').toLowerCase().includes('target_date')
+  );
+}
+
 async function getSupabaseUser() {
   const auth = await getCurrentUserContext();
 
@@ -55,6 +66,7 @@ async function ensureDatabaseSong(catalogSongId: string) {
     .limit(1);
 
   if (existingSongError) {
+    console.error('catalog lookup failed', existingSongError);
     const message = existingSongError.message.toLowerCase();
 
     if (message.includes('relation') || message.includes('does not exist')) {
@@ -88,6 +100,7 @@ async function ensureDatabaseSong(catalogSongId: string) {
     .single();
 
   if (insertSongError || !insertedSong) {
+    console.error('catalog sync failed', insertSongError);
     return { error: 'catalog_sync_failed' as const };
   }
 
@@ -106,6 +119,7 @@ export async function addPracticeItem(formData: FormData) {
   }
 
   const { supabase, user } = authUser;
+  const writeClient = createAdminClient() ?? supabase;
   const resolvedSong = await ensureDatabaseSong(catalogSongId);
   if ('error' in resolvedSong) {
     if (resolvedSong.error === 'demo_add_redirect') {
@@ -115,7 +129,7 @@ export async function addPracticeItem(formData: FormData) {
     redirect(`/dashboard?error=${resolvedSong.error}`);
   }
 
-  const { data: existingItem } = await supabase
+  const { data: existingItem } = await writeClient
     .from('user_practice_list')
     .select('id')
     .eq('user_id', user.id)
@@ -126,7 +140,7 @@ export async function addPracticeItem(formData: FormData) {
     redirect('/dashboard?error=duplicate_song');
   }
 
-  const { data: maxOrderData } = await supabase
+  const { data: maxOrderData } = await writeClient
     .from('user_practice_list')
     .select('sort_order')
     .eq('user_id', user.id)
@@ -134,7 +148,7 @@ export async function addPracticeItem(formData: FormData) {
     .limit(1)
     .maybeSingle();
 
-  const { error: insertError } = await supabase.from('user_practice_list').insert({
+  let { error: insertError } = await writeClient.from('user_practice_list').insert({
     user_id: user.id,
     song_id: resolvedSong.songId,
     status: 'planlandi',
@@ -143,7 +157,20 @@ export async function addPracticeItem(formData: FormData) {
     target_date: null,
   });
 
+  if (isTargetDateSchemaCacheError(insertError)) {
+    const retry = await writeClient.from('user_practice_list').insert({
+      user_id: user.id,
+      song_id: resolvedSong.songId,
+      status: 'planlandi',
+      sort_order: (maxOrderData?.sort_order ?? 0) + 1,
+      personal_note: '',
+    });
+
+    insertError = retry.error;
+  }
+
   if (insertError) {
+    console.error('practice insert failed', insertError);
     redirect('/dashboard?error=practice_insert_failed');
   }
 
@@ -169,7 +196,8 @@ export async function savePracticeItem(formData: FormData) {
   }
 
   const { supabase, user } = authUser;
-  const { error } = await supabase
+  const writeClient = createAdminClient() ?? supabase;
+  let { error } = await writeClient
     .from('user_practice_list')
     .update({
       status,
@@ -180,7 +208,22 @@ export async function savePracticeItem(formData: FormData) {
     .eq('id', itemId)
     .eq('user_id', user.id);
 
+  if (isTargetDateSchemaCacheError(error)) {
+    const retry = await writeClient
+      .from('user_practice_list')
+      .update({
+        status,
+        personal_note: personalNote,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', itemId)
+      .eq('user_id', user.id);
+
+    error = retry.error;
+  }
+
   if (error) {
+    console.error('practice update failed', error);
     redirect('/dashboard?error=practice_update_failed');
   }
 
@@ -197,13 +240,15 @@ export async function deletePracticeItem(formData: FormData) {
   }
 
   const { supabase, user } = authUser;
-  const { error } = await supabase
+  const writeClient = createAdminClient() ?? supabase;
+  const { error } = await writeClient
     .from('user_practice_list')
     .delete()
     .eq('id', itemId)
     .eq('user_id', user.id);
 
   if (error) {
+    console.error('practice delete failed', error);
     redirect('/dashboard?error=practice_delete_failed');
   }
 
