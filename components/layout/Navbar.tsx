@@ -97,6 +97,18 @@ export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
     setMenuOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (!menuOpen) {
+      document.body.style.removeProperty('overflow');
+      return;
+    }
+
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.removeProperty('overflow');
+    };
+  }, [menuOpen]);
+
   const handleSearch = (
     event: FormEvent<HTMLFormElement>,
     query: string,
@@ -162,94 +174,116 @@ export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
         <div
           id="mobile-menu"
           aria-hidden={!menuOpen}
-          className={`overflow-hidden md:hidden transition-[max-height,opacity,padding] duration-300 ease-out ${
-            menuOpen ? 'max-h-[85vh] pb-4 opacity-100' : 'max-h-0 pb-0 opacity-0'
+          className={`absolute inset-x-0 top-full z-[90] bg-base/80 backdrop-blur-[2px] transition duration-300 md:hidden ${
+            menuOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
           }`}
         >
-          <div
-            className={`rounded-2xl border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0)),linear-gradient(180deg,#121212,#181818)] p-5 shadow-soft transition duration-300 ease-out ${
-              menuOpen ? 'translate-y-0 scale-100' : '-translate-y-3 scale-[0.985]'
-            }`}
-          >
-            <div className="mb-5 flex items-end justify-between gap-4 border-b border-border pb-4">
-              <div>
-                <p className="eyebrow">Gezinme</p>
-                <p className="mt-2 font-display text-3xl font-semibold text-text">
-                  Arşiv menüsü
-                </p>
-              </div>
-              <AuthArea authMode={authMode} />
-            </div>
-
-            <form
-              onSubmit={(event) =>
-                handleSearch(event, mobileQuery, () => {
-                  setMobileQuery('');
-                  setMenuOpen(false);
-                })
-              }
-              className="mb-5"
+          <div className="container-base py-4">
+            <div
+              className={`flex h-[calc(100dvh-4rem-1px)] max-h-[calc(100dvh-4rem-1px)] flex-col overflow-hidden rounded-2xl border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0)),linear-gradient(180deg,#121212,#181818)] shadow-soft transition duration-300 ease-out ${
+                menuOpen ? 'translate-y-0 scale-100' : '-translate-y-3 scale-[0.985]'
+              }`}
             >
-              <label className="relative block text-sm">
-                <span className="mb-2 block text-muted">Türkü ara</span>
-                <div className="relative">
-                  <input
-                    value={mobileQuery}
-                    onChange={(event) => setMobileQuery(event.target.value)}
-                    className="field-input pr-10"
-                    placeholder="Türkü adı yaz"
-                  />
-                  {mobileQuery ? (
-                    <button
-                      type="button"
-                      onClick={() => setMobileQuery('')}
-                      aria-label="Aramayı temizle"
-                      className="absolute right-3 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-base text-muted transition hover:bg-surface2 hover:text-text"
-                    >
-                      ×
-                    </button>
-                  ) : null}
+              <div className="overflow-y-auto overscroll-contain px-5 pb-5 pt-5">
+                <div className="mb-5 flex items-end justify-between gap-4 border-b border-border pb-4">
+                  <div>
+                    <p className="eyebrow">Gezinme</p>
+                    <p className="mt-2 font-display text-3xl font-semibold text-text">
+                      Arşiv menüsü
+                    </p>
+                  </div>
+                  <AuthArea authMode={authMode} />
                 </div>
-                <SongSearchSuggestions
-                  songs={songs}
-                  query={mobileQuery}
-                  onSelect={(song) => {
-                    setMobileQuery(song.title);
-                    setMenuOpen(false);
-                    router.push(getSongHref(song));
-                  }}
-                />
-              </label>
-              <button type="submit" className="button-secondary mt-3 w-full px-4 py-2">
-                Sanatçı sayfasında ara
-              </button>
-            </form>
 
-            <div className="space-y-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="flex items-center justify-between rounded-xl border border-border bg-surface2/60 px-4 py-3 text-sm text-text transition hover:bg-surface2"
+                <form
+                  onSubmit={(event) =>
+                    handleSearch(event, mobileQuery, () => {
+                      setMobileQuery('');
+                      setMenuOpen(false);
+                    })
+                  }
+                  className="mb-5"
                 >
-                  <span>{link.label}</span>
-                  <span className="text-muted">↗</span>
-                </Link>
-              ))}
-            </div>
+                  <label className="relative block text-sm">
+                    <span className="mb-2 block text-muted">Türkü ara</span>
+                    <div className="relative">
+                      <input
+                        value={mobileQuery}
+                        onChange={(event) => setMobileQuery(event.target.value)}
+                        className="field-input pr-10"
+                        placeholder="Türkü adı yaz"
+                      />
+                      {mobileQuery ? (
+                        <button
+                          type="button"
+                          onClick={() => setMobileQuery('')}
+                          aria-label="Aramayı temizle"
+                          className="absolute right-3 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-base text-muted transition hover:bg-surface2 hover:text-text"
+                        >
+                          ×
+                        </button>
+                      ) : null}
+                    </div>
+                    <SongSearchSuggestions
+                      songs={songs}
+                      query={mobileQuery}
+                      onSelect={(song) => {
+                        setMobileQuery(song.title);
+                        setMenuOpen(false);
+                        router.push(getSongHref(song));
+                      }}
+                    />
+                  </label>
+                  <button type="submit" className="button-secondary mt-3 w-full px-4 py-2">
+                    Sanatçı sayfasında ara
+                  </button>
+                </form>
 
-            <div className="mt-6">
-              <p className="eyebrow">Sanatçılar</p>
-              <div className="mt-3 grid grid-cols-1 gap-2">
-                {artists.map((artist) => (
-                  <Link
-                    key={artist.id}
-                    href={`/artists/${artist.slug}`}
-                    className="rounded-xl border border-border bg-surface px-3 py-3 text-sm leading-5 text-muted transition hover:text-text"
-                  >
-                    {artist.name}
-                  </Link>
-                ))}
+                <div className="space-y-2">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="flex items-center justify-between rounded-xl border border-border bg-surface2/60 px-4 py-3 text-sm text-text transition hover:bg-surface2"
+                    >
+                      <span>{link.label}</span>
+                      <span className="text-muted">↗</span>
+                    </Link>
+                  ))}
+                </div>
+
+                <div className="mt-6">
+                  <div className="flex items-end justify-between gap-3">
+                    <p className="eyebrow">Sanatçılar</p>
+                    <p className="text-xs text-muted">{artists.length} sanatçı</p>
+                  </div>
+                  <div className="mt-3 grid grid-cols-1 gap-2">
+                    {artists.map((artist) => (
+                      <Link
+                        key={artist.id}
+                        href={`/artists/${artist.slug}`}
+                        className="rounded-xl border border-border bg-surface px-3 py-3 text-sm leading-5 text-muted transition hover:text-text"
+                      >
+                        {artist.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-6 rounded-xl border border-dashed border-border/80 bg-surface/70 px-4 py-3 text-center">
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">
+                    Liste sonu
+                  </p>
+                  <p className="mt-2 text-sm text-stone-300">
+                    Tüm sanatçılar burada listelendi.
+                  </p>
+                </div>
+              </div>
+
+              <div className="border-t border-border/80 bg-base/70 px-5 py-3">
+                <p className="text-center text-xs uppercase tracking-[0.16em] text-muted">
+                  Arşiv menüsü açık
+                </p>
               </div>
             </div>
           </div>
