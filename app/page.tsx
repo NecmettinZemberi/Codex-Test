@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { ArtistCard } from '@/components/ui/ArtistCard';
 import { artists } from '@/data/mockData';
+import { getCurrentUserContext } from '@/utils/auth/server';
 import { createClient } from '@/utils/supabase/server';
 
 export default async function HomePage() {
   const featuredArtists = artists.slice(0, 3);
+  const auth = await getCurrentUserContext();
 
   let todoNames: string[] = [];
 
@@ -31,8 +33,8 @@ export default async function HomePage() {
             durumlarını takip edebilir.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/login" className="button-primary">
-              Giriş yap
+            <Link href={auth.isAuthenticated ? '/turkuler' : '/login'} className="button-primary">
+              {auth.isAuthenticated ? 'Türküler' : 'Giriş yap'}
             </Link>
             <Link href="/dashboard" className="button-secondary">
               Çalışma listeme git
