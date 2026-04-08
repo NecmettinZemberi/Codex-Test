@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { ArrowUpRightIcon } from '@/components/ui/ArrowUpRightIcon';
 import { Artist } from '@/types/domain';
 
 type ArtistCardProps = {
@@ -38,9 +39,10 @@ export function ArtistCard({ artist }: ArtistCardProps) {
 
         <Link
           href={`/artists/${artist.slug}`}
-          className="mt-5 inline-flex text-sm font-medium text-accent transition hover:text-warm"
+          className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-accent transition hover:text-warm"
         >
-          Sanatçı sayfasına git →
+          <span>Sanatçı sayfasına git</span>
+          <ArrowUpRightIcon className="h-3.5 w-3.5" />
         </Link>
       </div>
     </article>
