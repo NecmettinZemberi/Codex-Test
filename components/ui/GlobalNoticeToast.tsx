@@ -11,14 +11,16 @@ function getNoticeCopy(kind: NoticeKind) {
     return {
       title: 'Parça zaten listede',
       message: 'Bu parça zaten çalışma listende yer alıyor.',
-      tone: 'border-amber-700/70 bg-amber-700/12 text-amber-100',
+      tone: 'border-amber-700/70 bg-[linear-gradient(180deg,rgba(180,83,9,0.18),rgba(24,24,24,0.98))] text-stone-50',
+      dot: 'bg-amber-300',
     };
   }
 
   return {
     title: 'Parça listeye eklendi',
     message: 'Parça çalışma listene eklendi.',
-    tone: 'border-emerald-700/80 bg-emerald-700/14 text-stone-100',
+    tone: 'border-emerald-700/80 bg-[linear-gradient(180deg,rgba(5,150,105,0.18),rgba(18,18,18,0.98))] text-stone-50',
+    dot: 'bg-emerald-300',
   };
 }
 
@@ -69,26 +71,25 @@ export function GlobalNoticeToast() {
   return (
     <div className="pointer-events-none fixed inset-x-4 bottom-4 z-[120] flex justify-end sm:inset-x-6 sm:bottom-6">
       <div
-        className={`pointer-events-auto w-full max-w-sm rounded-2xl border px-4 py-4 shadow-soft transition duration-200 sm:max-w-md ${
+        className={`pointer-events-auto w-full max-w-sm rounded-2xl border px-4 py-4 shadow-[0_18px_60px_rgba(0,0,0,0.45)] ring-1 ring-white/8 transition duration-200 sm:max-w-md ${
           copy.tone
         } ${visible ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}
         role="status"
         aria-live="polite"
       >
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 h-2.5 w-2.5 rounded-full bg-current opacity-90" />
+          <div className={`mt-1 h-2.5 w-2.5 rounded-full ${copy.dot}`} />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold">{copy.title}</p>
-            <p className="mt-1 text-sm leading-6 text-current/90">{copy.message}</p>
+            <p className="text-sm font-semibold tracking-[0.01em]">{copy.title}</p>
+            <p className="mt-1 text-sm leading-6 text-stone-200">{copy.message}</p>
             {notice === 'added' && noticeTarget ? (
-              <div className="mt-3 text-sm">
+              <div className="mt-3 text-sm text-stone-100">
                 <Link
                   href={noticeTarget}
-                  className="font-bold text-current underline decoration-current/50 underline-offset-4 transition hover:decoration-current"
+                  className="font-bold tracking-[0.01em] text-stone-50 transition hover:text-white"
                 >
-                  Listeye
-                </Link>{' '}
-                git
+                  Listeye git
+                </Link>
               </div>
             ) : null}
           </div>
@@ -99,7 +100,7 @@ export function GlobalNoticeToast() {
               window.setTimeout(clearNotice, 180);
             }}
             aria-label="Bildirimi kapat"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-current/20 text-lg text-current/80 transition hover:bg-black/10 hover:text-current"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/10 text-lg text-stone-200 transition hover:bg-white/8 hover:text-white"
           >
             ×
           </button>

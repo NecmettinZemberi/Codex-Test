@@ -140,7 +140,10 @@ export function AllSongsCatalog({
               <form action={addAction}>
                 <input type="hidden" name="song_id" value={song.id} />
                 <input type="hidden" name="redirect_to" value={redirectTo} />
-                <button type="submit" className="button-primary px-4 py-2 text-sm">
+                <button
+                  type="submit"
+                  className="button-primary px-4 py-2 text-sm transition duration-200 hover:-translate-y-0.5 hover:bg-stone-100 hover:shadow-[0_12px_30px_rgba(231,229,228,0.16)]"
+                >
                   Ekle
                 </button>
               </form>
