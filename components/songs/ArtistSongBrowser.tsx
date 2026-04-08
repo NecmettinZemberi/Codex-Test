@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { PaginatedSongList } from '@/components/songs/PaginatedSongList';
 import { SongSearchSuggestions } from '@/components/songs/SongSearchSuggestions';
 import { songTypeLabels } from '@/lib/utils';
@@ -17,6 +18,8 @@ export function ArtistSongBrowser({
   initialQuery = '',
   initialType = 'all',
 }: ArtistSongBrowserProps) {
+  const pathname = usePathname();
+  const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [typeFilter, setTypeFilter] = useState<SongType | 'all'>(initialType);
 
@@ -38,6 +41,21 @@ export function ArtistSongBrowser({
     });
   }, [query, songs, typeFilter]);
 
+  const replaceUrlState = (nextQuery: string, nextType: SongType | 'all') => {
+    const params = new URLSearchParams();
+
+    if (nextQuery.trim()) {
+      params.set('q', nextQuery.trim());
+    }
+
+    if (nextType !== 'all') {
+      params.set('type', nextType);
+    }
+
+    const nextHref = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(nextHref);
+  };
+
   return (
     <div>
       <section className="surface p-5">
@@ -54,7 +72,10 @@ export function ArtistSongBrowser({
               {query ? (
                 <button
                   type="button"
-                  onClick={() => setQuery('')}
+                  onClick={() => {
+                    setQuery('');
+                    replaceUrlState('', typeFilter);
+                  }}
                   aria-label="Aramayı temizle"
                   className="absolute right-3 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-base text-muted transition hover:bg-surface2 hover:text-text"
                 >
@@ -65,7 +86,10 @@ export function ArtistSongBrowser({
             <SongSearchSuggestions
               songs={songs}
               query={query}
-              onSelect={(song) => setQuery(song.title)}
+              onSelect={(song) => {
+                setQuery(song.title);
+                replaceUrlState(song.title, typeFilter);
+              }}
             />
           </label>
 
@@ -73,7 +97,11 @@ export function ArtistSongBrowser({
             <span className="mb-2 block text-muted">Tür</span>
             <select
               value={typeFilter}
-              onChange={(event) => setTypeFilter(event.target.value as SongType | 'all')}
+              onChange={(event) => {
+                const nextType = event.target.value as SongType | 'all';
+                setTypeFilter(nextType);
+                replaceUrlState(query, nextType);
+              }}
               className="field-input"
             >
               <option value="all">Tümü</option>

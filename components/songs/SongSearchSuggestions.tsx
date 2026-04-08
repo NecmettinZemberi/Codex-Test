@@ -16,11 +16,11 @@ export function SongSearchSuggestions({
 }: SongSearchSuggestionsProps) {
   const suggestions = getSongSuggestions(songs, query);
   const normalizedQuery = normalizeForSearch(query);
-  const hasExactMatch = suggestions.some(
+  const exactMatches = suggestions.filter(
     (song) => normalizeForSearch(song.title) === normalizedQuery,
   );
 
-  if (!query.trim() || suggestions.length === 0 || hasExactMatch) {
+  if (!query.trim() || suggestions.length === 0 || exactMatches.length === 1) {
     return null;
   }
 

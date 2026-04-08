@@ -2,21 +2,31 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { AuthButtons } from '@/components/ui/AuthButtons';
+import { songs as catalogSongs } from '@/data/mockData';
 import { songTypeLabels } from '@/lib/utils';
 import type { SongType } from '@/types/domain';
 import { addPracticeItem, updatePracticeStatus } from './actions';
 
-type DashboardSong = {
-  id: string;
-  title: string;
-  artist: string;
-  type: SongType;
+type DashboardPageProps = {
+  searchParams?: {
+    error?: string;
+  };
 };
 
 type PracticeItemRow = {
   id: string;
   status: string;
-  songs: DashboardSong | DashboardSong[] | null;
+  songs: {
+    id: string;
+    title: string;
+    artist: string;
+    type: SongType;
+  } | Array<{
+    id: string;
+    title: string;
+    artist: string;
+    type: SongType;
+  }> | null;
 };
 
 const statuses = [
@@ -26,7 +36,18 @@ const statuses = [
   { value: 'tamamlandi', label: 'Tamamlandı' },
 ];
 
-export default async function DashboardPage() {
+const dashboardErrors: Record<string, string> = {
+  song_not_found: 'Seçilen parça katalogda bulunamadı.',
+  catalog_lookup_failed: 'Parça kataloğu kontrol edilirken bir sorun oluştu.',
+  catalog_sync_required:
+    'Bu parça kullanıcı paneli veritabanına henüz aktarılmadı. Yönetici senkron ayarları tamamlandığında tekrar deneyin.',
+  catalog_sync_failed:
+    'Parça kullanıcı paneline eklenmeden önce veritabanına aktarılırken bir sorun oluştu.',
+  duplicate_song: 'Bu parça zaten çalışma listende yer alıyor.',
+  practice_insert_failed: 'Parça çalışma listesine eklenemedi. Lütfen tekrar deneyin.',
+};
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -35,11 +56,6 @@ export default async function DashboardPage() {
   if (!user) {
     redirect('/login');
   }
-
-  const { data: songs } = await supabase
-    .from('songs')
-    .select('id,title,artist,type')
-    .order('created_at', { ascending: false });
 
   const { data: practiceItems } = await supabase
     .from('user_practice_list')
@@ -55,6 +71,8 @@ export default async function DashboardPage() {
     .eq('user_id', user.id)
     .order('sort_order', { ascending: true });
 
+  const errorMessage = searchParams?.error ? dashboardErrors[searchParams.error] : null;
+
   return (
     <main className="container-base py-10 sm:py-16">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -68,12 +86,23 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {errorMessage ? (
+        <p className="mb-6 rounded-lg border border-warm/40 bg-warm/10 p-4 text-sm leading-6 text-stone-200">
+          {errorMessage}
+        </p>
+      ) : null}
+
       <section className="surface p-5">
         <h2 className="font-display text-3xl font-semibold text-text">Listeye parça ekle</h2>
+        <p className="mt-3 text-sm leading-6 text-muted">
+          Repertuvar seçimi sitedeki katalogla senkron çalışır. Parça ilk kez ekleniyorsa sistem
+          kullanıcı paneli veritabanında da hazırlamayı dener.
+        </p>
+
         <form action={addPracticeItem} className="mt-4 flex flex-col gap-3 sm:flex-row">
           <select name="song_id" className="field-input min-w-0" required>
             <option value="">Parça seç</option>
-            {((songs ?? []) as DashboardSong[]).map((song) => (
+            {catalogSongs.map((song) => (
               <option key={song.id} value={song.id}>
                 {song.title} - {song.artist} ({songTypeLabels[song.type]})
               </option>
@@ -108,7 +137,11 @@ export default async function DashboardPage() {
                   className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center"
                 >
                   <input type="hidden" name="item_id" value={item.id} />
-                  <select name="status" defaultValue={item.status} className="field-input w-full sm:max-w-xs">
+                  <select
+                    name="status"
+                    defaultValue={item.status}
+                    className="field-input w-full sm:max-w-xs"
+                  >
                     {statuses.map((status) => (
                       <option key={status.value} value={status.value}>
                         {status.label}
