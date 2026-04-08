@@ -16,7 +16,7 @@ const navLinks = [
   { label: 'Sanatçılar', href: '/artists' },
 ];
 
-const authHref = '/auth/login?next=/dashboard';
+const authHref = '/login';
 
 function getLinkClass(pathname: string, href: string) {
   const isActive = pathname === href || pathname.startsWith(`${href}/`);
@@ -117,7 +117,7 @@ export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-base/90 backdrop-blur-sm">
+    <header className="sticky top-0 z-[80] border-b border-border bg-base/90 backdrop-blur-sm">
       <nav className="container-base" aria-label="Ana menü">
         <div className="grid h-16 grid-cols-[48px_1fr_auto] items-center gap-3 md:hidden">
           <button
@@ -174,7 +174,9 @@ export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
             <div className="mb-5 flex items-end justify-between gap-4 border-b border-border pb-4">
               <div>
                 <p className="eyebrow">Gezinme</p>
-                <p className="mt-2 font-display text-3xl font-semibold text-text">Arşiv menüsü</p>
+                <p className="mt-2 font-display text-3xl font-semibold text-text">
+                  Arşiv menüsü
+                </p>
               </div>
               <AuthArea authMode={authMode} />
             </div>

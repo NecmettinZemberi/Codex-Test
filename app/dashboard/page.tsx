@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { AllSongsCatalog } from '@/components/dashboard/AllSongsCatalog';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { AuthButtons } from '@/components/ui/AuthButtons';
 import { PracticeBoard } from '@/components/dashboard/PracticeBoard';
@@ -7,6 +8,7 @@ import { songs as catalogSongs, mockPracticeList } from '@/data/mockData';
 import {
   getSongDetailHref,
   songTypeLabels,
+  statusClasses,
   statusLabels,
 } from '@/lib/utils';
 import { getCurrentUserContext } from '@/utils/auth/server';
@@ -253,39 +255,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
         <section className="space-y-6">
           {activeTab === 'all-songs' ? (
-            <section className="surface p-5">
-              <h2 className="font-display text-3xl font-semibold text-text">Tüm parçalar</h2>
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Katalogdaki herhangi bir parçayı doğrudan çalışma listene ekleyebilirsin.
-              </p>
-
-              <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                {catalogSongs.map((song) => (
-                  <article key={song.id} className="rounded-xl border border-border bg-surface2 p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="font-display text-2xl font-semibold text-text">
-                          <Link href={getSongDetailHref(song)} className="transition hover:text-accent">
-                            {song.title}
-                          </Link>
-                        </h3>
-                        <p className="mt-2 text-sm text-muted">
-                          {song.artist} · {songTypeLabels[song.type]}
-                        </p>
-                      </div>
-
-                      <form action={addPracticeItem}>
-                        <input type="hidden" name="song_id" value={song.id} />
-                        <input type="hidden" name="redirect_to" value={buildDashboardHref('practice')} />
-                        <button type="submit" className="button-primary px-4 py-2 text-sm">
-                          Ekle
-                        </button>
-                      </form>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
+            <AllSongsCatalog
+              songs={catalogSongs}
+              addAction={addPracticeItem}
+              redirectTo={buildDashboardHref('practice')}
+            />
           ) : null}
 
           {activeTab === 'practice' ? (
@@ -335,8 +309,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                       href={buildDashboardHref('practice', status.value)}
                       className={
                         statusFilter === status.value
-                          ? 'inline-flex items-center justify-center rounded-lg border border-accent bg-accent px-4 py-2 text-sm font-semibold text-base'
-                          : 'button-secondary px-4 py-2 text-sm'
+                          ? `inline-flex items-center justify-center rounded-lg border px-4 py-2 text-sm font-semibold ${statusClasses[status.value]}`
+                          : `inline-flex items-center justify-center rounded-lg border px-4 py-2 text-sm transition hover:border-border/80 hover:text-text ${statusClasses[status.value]} opacity-80`
                       }
                     >
                       {status.label}
@@ -366,9 +340,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                               </Link>{' '}
                               <span className="font-body text-sm text-muted">({song.artist})</span>
                             </h3>
-                            <p className="mt-2 text-sm text-muted">
-                              Tür: {songTypeLabels[song.type]} · Güncel durum:{' '}
-                              <strong className="text-text">{statusLabels[item.status]}</strong>
+                            <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted">
+                              <span>Tür: {songTypeLabels[song.type]}</span>
+                              <span className="text-border">•</span>
+                              <span
+                                className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${statusClasses[item.status]}`}
+                              >
+                                {statusLabels[item.status]}
+                              </span>
                             </p>
                           </div>
 
