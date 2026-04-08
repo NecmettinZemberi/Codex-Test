@@ -1,4 +1,4 @@
--- Supabase / PostgreSQL schema (gerçek auth + kullanıcıya özel çalışma listesi)
+-- Supabase / PostgreSQL schema (gercek auth + kullaniciya ozel calisma listesi)
 
 create extension if not exists "pgcrypto";
 
@@ -51,6 +51,7 @@ alter table public.artists enable row level security;
 alter table public.songs enable row level security;
 alter table public.user_practice_list enable row level security;
 
+-- Artists/Songs herkese acik okunabilir (anon + authenticated)
 create policy "Artists are readable by everyone"
   on public.artists for select
   using (true);
@@ -59,6 +60,7 @@ create policy "Songs are readable by everyone"
   on public.songs for select
   using (true);
 
+-- Practice list sadece ilgili kullaniciya acik
 create policy "Users can read own practice list"
   on public.user_practice_list for select
   using (auth.uid() = user_id);
