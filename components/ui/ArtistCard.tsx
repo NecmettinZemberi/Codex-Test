@@ -8,18 +8,24 @@ type ArtistCardProps = {
 
 export function ArtistCard({ artist }: ArtistCardProps) {
   return (
-    <article className="surface overflow-hidden">
-      <div className="relative h-44 w-full">
-        <Image src={artist.image_url} alt={artist.name} fill className="object-cover" />
+    <article className="surface group overflow-hidden">
+      <div className="relative h-52 w-full overflow-hidden border-b border-border bg-surface2">
+        <div className="absolute inset-0 z-10 bg-gradient-to-t from-base via-base/10 to-transparent" />
+        <Image
+          src={artist.image_url}
+          alt={artist.name}
+          fill
+          className="object-cover grayscale transition duration-500 group-hover:scale-[1.02]"
+        />
       </div>
-      <div className="p-5">
-        <h3 className="text-lg font-semibold text-white">{artist.name}</h3>
-        <p className="mt-2 line-clamp-3 text-sm text-slate-300">{artist.short_bio}</p>
+      <div className="bg-gradient-to-b from-surface to-surface2 p-5">
+        <h3 className="font-display text-3xl font-semibold leading-none text-text">{artist.name}</h3>
+        <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted">{artist.short_bio}</p>
         <Link
           href={`/artists/${artist.slug}`}
-          className="mt-4 inline-flex text-sm font-medium text-accent hover:text-amber-300"
+          className="mt-5 inline-flex text-sm font-medium text-accent transition hover:text-warm"
         >
-          Sanatçı Sayfasına Git →
+          Sanatçı sayfasına git →
         </Link>
       </div>
     </article>

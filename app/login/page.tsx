@@ -21,18 +21,19 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <main className="container-base py-12 sm:py-16">
       <section className="surface max-w-2xl p-8">
-        <h1 className="text-3xl font-semibold text-white">Giriş Yap</h1>
-        <p className="mt-3 text-slate-300">
+        <p className="eyebrow">Arşiv erişimi</p>
+        <h1 className="page-title mt-4 text-3xl sm:text-4xl">Giriş yap</h1>
+        <p className="muted-copy mt-4 leading-7">
           Google ile giriş yaptıktan sonra kişisel çalışma listenizi yönetebilirsiniz.
         </p>
 
         {searchParams?.error ? (
-          <p className="mt-4 rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-200">
+          <p className="mt-5 rounded-lg border border-warm/40 bg-warm/10 p-3 text-sm text-stone-200">
             Giriş başlatılamadı. Supabase Auth ayarlarını kontrol edin.
           </p>
         ) : null}
 
-        <div className="mt-6">
+        <div className="mt-7">
           <AuthButtons />
         </div>
       </section>

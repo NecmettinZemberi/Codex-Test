@@ -18,36 +18,35 @@ export default async function HomePage() {
 
   return (
     <main className="container-base py-12 sm:py-16">
-      <section className="surface p-8 sm:p-12">
-        <p className="text-sm uppercase tracking-[0.2em] text-accent">Bozlak Çalışma Platformu</p>
-        <h1 className="mt-4 text-3xl font-semibold text-white sm:text-5xl">
-          Neşet Ertaş tavrı saz çalışmak için sade ve güçlü bir başlangıç.
-        </h1>
-        <p className="mt-5 max-w-3xl leading-relaxed text-slate-300">
-          Bu platform, halk müziği sanatçılarını ve eserlerini tek yerde toplar. Giriş yapan
-          kullanıcılar kendi çalışma listelerini oluşturabilir, sıraya koyabilir ve ilerleme
-          durumlarını takip edebilir.
-        </p>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Link
-            href="/login"
-            className="rounded-lg bg-accent px-5 py-3 text-center text-sm font-semibold text-slate-900 transition hover:bg-amber-300"
-          >
-            Giriş Yap
-          </Link>
-          <Link
-            href="/dashboard"
-            className="rounded-lg border border-border px-5 py-3 text-center text-sm font-semibold text-slate-100 transition hover:bg-slate-800"
-          >
-            Çalışma Listeme Git
-          </Link>
+      <section className="surface relative overflow-hidden p-8 sm:p-12">
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_38%),radial-gradient(circle_at_top_right,rgba(143,107,59,0.18),transparent_32%)]" />
+        <div className="relative">
+          <p className="eyebrow text-accent">Bozlak Çalışma Platformu</p>
+          <h1 className="page-title mt-5 max-w-4xl">
+            Neşet Ertaş tavrı saz çalışmak için sade ve güçlü bir başlangıç.
+          </h1>
+          <p className="mt-6 max-w-3xl text-base leading-8 text-stone-200">
+            Bu platform, halk müziği sanatçılarını ve eserlerini tek yerde toplar. Giriş yapan
+            kullanıcılar kendi çalışma listelerini oluşturabilir, sıraya koyabilir ve ilerleme
+            durumlarını takip edebilir.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link href="/login" className="button-primary">
+              Giriş yap
+            </Link>
+            <Link href="/dashboard" className="button-secondary">
+              Çalışma listeme git
+            </Link>
+          </div>
         </div>
       </section>
 
       {todoNames.length > 0 ? (
-        <section className="mt-8 surface p-6">
-          <h2 className="text-lg font-semibold text-white">Supabase Örnek Todo Kayıtları</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-300">
+        <section className="surface-alt mt-8 p-6">
+          <h2 className="font-display text-3xl font-semibold text-text">
+            Supabase örnek todo kayıtları
+          </h2>
+          <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-muted">
             {todoNames.map((todoName) => (
               <li key={todoName}>{todoName}</li>
             ))}
@@ -56,7 +55,7 @@ export default async function HomePage() {
       ) : null}
 
       <section className="mt-12">
-        <h2 className="text-2xl font-semibold text-white">Öne Çıkan Sanatçılar</h2>
+        <h2 className="section-title">Öne çıkan sanatçılar</h2>
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {featuredArtists.map((artist) => (
             <ArtistCard key={artist.id} artist={artist} />

@@ -1,9 +1,9 @@
-import { songs } from '@/data/mockData';
-import { PracticeStatus, SongType } from '@/types/domain';
+import { artists, songs } from '@/data/mockData';
+import { PracticeStatus, Song, SongType } from '@/types/domain';
 
 export const statusLabels: Record<PracticeStatus, string> = {
   planlandi: 'Planlandı',
-  siraya_alindi: 'Sıraya Alındı',
+  siraya_alindi: 'Sıraya alındı',
   calisiliyor: 'Çalışılıyor',
   tamamlandi: 'Tamamlandı',
 };
@@ -11,9 +11,93 @@ export const statusLabels: Record<PracticeStatus, string> = {
 export const songTypeLabels: Record<SongType, string> = {
   bozlak: 'Bozlak',
   turku: 'Türkü',
-  'uzun hava': 'Uzun Hava',
+  'uzun hava': 'Uzun hava',
 };
 
 export function getSongById(songId: string) {
   return songs.find((song) => song.id === songId);
+}
+
+export function normalizeForSearch(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLocaleLowerCase('tr-TR')
+    .trim();
+}
+
+export function getSongSuggestions(items: Song[], query: string, limit = 6) {
+  const normalizedQuery = normalizeForSearch(query);
+
+  if (!normalizedQuery) {
+    return [];
+  }
+
+  return items
+    .map((song) => {
+      const normalizedTitle = normalizeForSearch(song.title);
+
+      if (normalizedTitle === normalizedQuery) {
+        return { song, rank: 0, matchIndex: 0 };
+      }
+
+      if (normalizedTitle.startsWith(normalizedQuery)) {
+        return { song, rank: 1, matchIndex: 0 };
+      }
+
+      const matchIndex = normalizedTitle.indexOf(normalizedQuery);
+      if (matchIndex >= 0) {
+        return { song, rank: 2, matchIndex };
+      }
+
+      return null;
+    })
+    .filter((item): item is { song: Song; rank: number; matchIndex: number } => item !== null)
+    .sort((left, right) => {
+      if (left.rank !== right.rank) {
+        return left.rank - right.rank;
+      }
+
+      if (left.matchIndex !== right.matchIndex) {
+        return left.matchIndex - right.matchIndex;
+      }
+
+      return left.song.title.localeCompare(right.song.title, 'tr');
+    })
+    .slice(0, limit)
+    .map((item) => item.song);
+}
+
+export function findBestSongMatch(items: Song[], query: string) {
+  return getSongSuggestions(items, query, 1)[0] ?? null;
+}
+
+export function getArtistByName(name: string) {
+  return artists.find((artist) => artist.name === name) ?? null;
+}
+
+export function getSongHref(song: Song) {
+  const artist = getArtistByName(song.artist);
+
+  if (!artist) {
+    return `/turkuler?q=${encodeURIComponent(song.title)}`;
+  }
+
+  return `/artists/${artist.slug}?q=${encodeURIComponent(song.title)}`;
+}
+
+export function getSearchHref(query: string) {
+  const trimmed = query.trim();
+
+  if (!trimmed) {
+    return '/turkuler';
+  }
+
+  const match = findBestSongMatch(songs, trimmed);
+
+  if (!match) {
+    return `/turkuler?q=${encodeURIComponent(trimmed)}`;
+  }
+
+  return getSongHref(match);
 }
