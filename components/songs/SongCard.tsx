@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { addPracticeItem } from '@/app/dashboard/actions';
+import { ArrowUpRightIcon } from '@/components/ui/ArrowUpRightIcon';
 import { BaglamaIcon } from '@/components/ui/BaglamaIcon';
 import { getSongDetailHref, getSongHref, songTypeLabels } from '@/lib/utils';
 import { Song } from '@/types/domain';
@@ -29,18 +30,18 @@ export function SongCard({ song }: SongCardProps) {
           {songTypeLabels[song.type]}
         </span>
       </div>
+
       <p className="mt-3 text-sm text-muted">
         Sanatçı:{' '}
         <Link href={getSongHref(song)} className="text-text transition hover:text-accent">
           {song.artist}
         </Link>
       </p>
+
       <p className="mt-4 text-sm leading-6 text-text/88">{song.lyrics_or_notes}</p>
 
       <div className="mt-6 border-t border-border/80 pt-4">
-        <p className="mb-3 text-[10px] uppercase tracking-[0.24em] text-muted">
-          Çalışma hattı
-        </p>
+        <p className="mb-3 text-[10px] uppercase tracking-[0.24em] text-muted">Çalışma hattı</p>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <form action={addPracticeItem} className="sm:flex-none">
@@ -60,19 +61,19 @@ export function SongCard({ song }: SongCardProps) {
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm sm:justify-end">
             <Link
               href={getSongDetailHref(song)}
-              className="inline-flex items-center gap-1 font-medium text-accent transition hover:text-warm"
+              className="inline-flex items-center gap-1.5 font-medium text-accent transition hover:text-warm"
             >
               <span>Parça arşivine git</span>
-              <span aria-hidden="true">↗</span>
+              <ArrowUpRightIcon className="h-3.5 w-3.5" />
             </Link>
 
             <Link
               href={song.youtube_url}
               target="_blank"
-              className="inline-flex items-center gap-1 font-medium text-muted transition hover:text-text"
+              className="inline-flex items-center gap-1.5 font-medium text-muted transition hover:text-text"
             >
               <span>YouTube kaynağı</span>
-              <span aria-hidden="true">↗</span>
+              <ArrowUpRightIcon className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>
