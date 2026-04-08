@@ -56,28 +56,34 @@ alter table public.songs enable row level security;
 alter table public.user_practice_list enable row level security;
 
 -- Artists/Songs herkese acik okunabilir (anon + authenticated)
+drop policy if exists "Artists are readable by everyone" on public.artists;
 create policy "Artists are readable by everyone"
   on public.artists for select
   using (true);
 
+drop policy if exists "Songs are readable by everyone" on public.songs;
 create policy "Songs are readable by everyone"
   on public.songs for select
   using (true);
 
 -- Practice list sadece ilgili kullaniciya acik
+drop policy if exists "Users can read own practice list" on public.user_practice_list;
 create policy "Users can read own practice list"
   on public.user_practice_list for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can insert own practice list" on public.user_practice_list;
 create policy "Users can insert own practice list"
   on public.user_practice_list for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can update own practice list" on public.user_practice_list;
 create policy "Users can update own practice list"
   on public.user_practice_list for update
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can delete own practice list" on public.user_practice_list;
 create policy "Users can delete own practice list"
   on public.user_practice_list for delete
   using (auth.uid() = user_id);

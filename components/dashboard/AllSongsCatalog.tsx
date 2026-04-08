@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { BaglamaIcon } from '@/components/ui/BaglamaIcon';
 import { getSongDetailHref, normalizeForSearch, songTypeLabels } from '@/lib/utils';
 import type { Song, SongType } from '@/types/domain';
 
@@ -142,8 +143,11 @@ export function AllSongsCatalog({
                 <input type="hidden" name="redirect_to" value={redirectTo} />
                 <button
                   type="submit"
-                  className="button-primary px-4 py-2 text-sm transition duration-200 hover:-translate-y-0.5 hover:bg-stone-100 hover:shadow-[0_12px_30px_rgba(231,229,228,0.16)]"
+                  className="inline-flex items-center gap-2 rounded-lg border border-stone-200/85 bg-stone-100 px-3.5 py-2 text-[13px] font-semibold text-stone-950 transition duration-200 hover:-translate-y-[1px] hover:border-stone-300 hover:bg-stone-200 hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)]"
                 >
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-stone-950 text-stone-100">
+                    <BaglamaIcon />
+                  </span>
                   Ekle
                 </button>
               </form>
