@@ -280,11 +280,6 @@ export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
                 </div>
               </div>
 
-              <div className="border-t border-border/80 bg-base/70 px-5 py-3">
-                <p className="text-center text-xs uppercase tracking-[0.16em] text-muted">
-                  Arşiv menüsü açık
-                </p>
-              </div>
             </div>
           </div>
         </div>

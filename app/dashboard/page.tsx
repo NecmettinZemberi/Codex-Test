@@ -353,7 +353,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
                           <form action={deletePracticeItem}>
                             <input type="hidden" name="item_id" value={item.id} />
-                            <button type="submit" className="button-secondary px-4 py-2">
+                            <button
+                              type="submit"
+                              className="button-secondary px-4 py-2 transition hover:border-rose-500/55 hover:bg-rose-500/12 hover:text-rose-100"
+                            >
                               Listeden kaldır
                             </button>
                           </form>
