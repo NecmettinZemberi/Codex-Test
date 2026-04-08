@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { addPracticeItem } from '@/app/dashboard/actions';
 import { getSongDetailHref, getSongHref, songTypeLabels } from '@/lib/utils';
 import { Song } from '@/types/domain';
@@ -10,6 +11,11 @@ type SongCardProps = {
 };
 
 export function SongCard({ song }: SongCardProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentSearch = searchParams.toString();
+  const redirectTo = currentSearch ? `${pathname}?${currentSearch}` : pathname;
+
   return (
     <article className="surface-alt p-5">
       <div className="flex flex-wrap items-center gap-2">
@@ -33,7 +39,7 @@ export function SongCard({ song }: SongCardProps) {
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <form action={addPracticeItem}>
           <input type="hidden" name="song_id" value={song.id} />
-          <input type="hidden" name="redirect_to" value="/dashboard?tab=practice" />
+          <input type="hidden" name="redirect_to" value={redirectTo} />
           <button type="submit" className="button-primary px-4 py-2 text-sm">
             Çalışma listeme ekle
           </button>

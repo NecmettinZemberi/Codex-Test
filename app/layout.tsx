@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/components/layout/Navbar';
+import { GlobalNoticeToast } from '@/components/ui/GlobalNoticeToast';
 import { getCurrentUserContext } from '@/utils/auth/server';
 
 const inter = Inter({
@@ -40,6 +41,7 @@ export default async function RootLayout({
       <body className={`${inter.variable} ${cormorant.variable}`}>
         <Navbar authMode={auth.mode} />
         {children}
+        <GlobalNoticeToast />
       </body>
     </html>
   );

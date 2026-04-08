@@ -258,7 +258,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             <AllSongsCatalog
               songs={catalogSongs}
               addAction={addPracticeItem}
-              redirectTo={buildDashboardHref('practice')}
+              redirectTo={buildDashboardHref('all-songs')}
             />
           ) : null}
 

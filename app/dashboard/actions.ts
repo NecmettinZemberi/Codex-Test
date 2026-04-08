@@ -7,6 +7,8 @@ import { getCurrentUserContext } from '@/utils/auth/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { createClient } from '@/utils/supabase/server';
 
+const PRACTICE_LIST_HREF = '/dashboard?tab=practice';
+
 function isTargetDateSchemaCacheError(error: { code?: string; message?: string } | null) {
   if (!error) {
     return false;
@@ -107,6 +109,18 @@ async function ensureDatabaseSong(catalogSongId: string) {
   return { songId: insertedSong.id };
 }
 
+function withNotice(redirectTo: string, notice: 'added' | 'duplicate') {
+  const safeRedirect = redirectTo.startsWith('/') ? redirectTo : '/dashboard';
+  const url = new URL(safeRedirect, 'http://localhost');
+  url.searchParams.set('notice', notice);
+
+  if (notice === 'added') {
+    url.searchParams.set('notice_target', PRACTICE_LIST_HREF);
+  }
+
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 export async function addPracticeItem(formData: FormData) {
   const catalogSongId = String(formData.get('song_id') ?? '');
   const redirectTo = String(formData.get('redirect_to') ?? '/dashboard');
@@ -137,7 +151,7 @@ export async function addPracticeItem(formData: FormData) {
     .limit(1);
 
   if ((existingItem?.length ?? 0) > 0) {
-    redirect('/dashboard?error=duplicate_song');
+    redirect(withNotice(redirectTo, 'duplicate'));
   }
 
   const { data: maxOrderData } = await writeClient
@@ -177,7 +191,7 @@ export async function addPracticeItem(formData: FormData) {
   revalidatePath('/dashboard');
   revalidatePath('/turkuler');
   if (redirectTo.startsWith('/')) {
-    redirect(redirectTo);
+    redirect(withNotice(redirectTo, 'added'));
   }
 }
 
