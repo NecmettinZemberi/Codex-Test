@@ -8,6 +8,17 @@ export const statusLabels: Record<PracticeStatus, string> = {
   tamamlandi: 'Tamamlandı',
 };
 
+export const statusClasses: Record<PracticeStatus, string> = {
+  planlandi:
+    'border-stone-600/80 bg-stone-500/10 text-stone-200',
+  siraya_alindi:
+    'border-amber-700/70 bg-amber-700/10 text-amber-200',
+  calisiliyor:
+    'border-sky-700/70 bg-sky-700/10 text-sky-200',
+  tamamlandi:
+    'border-emerald-700/80 bg-emerald-700/15 text-emerald-200',
+};
+
 export const songTypeLabels: Record<SongType, string> = {
   bozlak: 'Bozlak',
   turku: 'Türkü',

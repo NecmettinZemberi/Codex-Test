@@ -3,7 +3,13 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { songs } from '@/data/mockData';
-import { getSongById, getSongDetailHref, songTypeLabels, statusLabels } from '@/lib/utils';
+import {
+  getSongById,
+  getSongDetailHref,
+  songTypeLabels,
+  statusClasses,
+  statusLabels,
+} from '@/lib/utils';
 import { PracticeStatus, UserPracticeItem } from '@/types/domain';
 
 type PracticeBoardProps = {
@@ -113,9 +119,7 @@ export function PracticeBoard({
   const updateItem = (id: string, patch: Partial<UserPracticeItem>) => {
     setItems((prev) =>
       prev.map((item) =>
-        item.id === id
-          ? { ...item, ...patch, updated_at: new Date().toISOString() }
-          : item,
+        item.id === id ? { ...item, ...patch, updated_at: new Date().toISOString() } : item,
       ),
     );
   };
@@ -136,7 +140,10 @@ export function PracticeBoard({
     setItems((prev) => {
       const sorted = [...prev].sort((a, b) => a.sort_order - b.sort_order);
       const index = sorted.findIndex((item) => item.id === id);
-      if (index <= 0) return prev;
+      if (index <= 0) {
+        return prev;
+      }
+
       [sorted[index - 1], sorted[index]] = [sorted[index], sorted[index - 1]];
       return sorted.map((item, idx) => ({ ...item, sort_order: idx + 1 }));
     });
@@ -259,9 +266,13 @@ export function PracticeBoard({
               type="button"
               onClick={() => setStatusFilter(option.value)}
               className={
-                statusFilter === option.value
-                  ? 'inline-flex items-center justify-center rounded-lg border border-accent bg-accent px-4 py-2 text-sm font-semibold text-base'
-                  : 'button-secondary px-4 py-2 text-sm'
+                option.value === 'all'
+                  ? statusFilter === option.value
+                    ? 'inline-flex items-center justify-center rounded-lg border border-accent bg-accent px-4 py-2 text-sm font-semibold text-base'
+                    : 'button-secondary px-4 py-2 text-sm'
+                  : statusFilter === option.value
+                    ? `inline-flex items-center justify-center rounded-lg border px-4 py-2 text-sm font-semibold ${statusClasses[option.value]}`
+                    : `inline-flex items-center justify-center rounded-lg border px-4 py-2 text-sm transition hover:border-border/80 hover:text-text ${statusClasses[option.value]} opacity-80`
               }
             >
               {option.label}
@@ -273,7 +284,9 @@ export function PracticeBoard({
       <div className="grid gap-4">
         {filteredItems.map((item) => {
           const song = getSongById(item.song_id);
-          if (!song) return null;
+          if (!song) {
+            return null;
+          }
 
           return (
             <article key={item.id} className="surface-alt p-5">
@@ -285,14 +298,19 @@ export function PracticeBoard({
                     </Link>{' '}
                     <span className="font-body text-sm text-muted">({song.artist})</span>
                   </h3>
-                  <p className="mt-2 text-sm text-muted">Tür: {songTypeLabels[song.type]}</p>
+                  <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted">
+                    <span>Tür: {songTypeLabels[song.type]}</span>
+                    <span className="text-border">•</span>
+                    <span
+                      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${statusClasses[item.status]}`}
+                    >
+                      {statusLabels[item.status]}
+                    </span>
+                  </p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => moveUp(item.id)}
-                    className="button-secondary px-4 py-2 text-sm"
-                  >
+                  <button onClick={() => moveUp(item.id)} className="button-secondary px-4 py-2 text-sm">
                     Üste al
                   </button>
                   <button
@@ -352,10 +370,6 @@ export function PracticeBoard({
                   placeholder="Bu parça için demo notlarını burada tutabilirsin."
                 />
               </label>
-
-              <p className="mt-4 text-sm text-muted">
-                Güncel durum: <strong className="text-text">{statusLabels[item.status]}</strong>
-              </p>
             </article>
           );
         })}
