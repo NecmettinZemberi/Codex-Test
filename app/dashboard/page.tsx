@@ -3,11 +3,25 @@ import { createClient } from '@/utils/supabase/server';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { AuthButtons } from '@/components/ui/AuthButtons';
 import { songTypeLabels } from '@/lib/utils';
+import type { SongType } from '@/types/domain';
 import { addPracticeItem, updatePracticeStatus } from './actions';
+
+type DashboardSong = {
+  id: string;
+  title: string;
+  artist: string;
+  type: SongType;
+};
+
+type PracticeItemRow = {
+  id: string;
+  status: string;
+  songs: DashboardSong | DashboardSong[] | null;
+};
 
 const statuses = [
   { value: 'planlandi', label: 'Planlandı' },
-  { value: 'siraya_alindi', label: 'Sıraya Alındı' },
+  { value: 'siraya_alindi', label: 'Sıraya alındı' },
   { value: 'calisiliyor', label: 'Çalışılıyor' },
   { value: 'tamamlandi', label: 'Tamamlandı' },
 ];
@@ -42,34 +56,30 @@ export default async function DashboardPage() {
     .order('sort_order', { ascending: true });
 
   return (
-    <main className="container-base py-12 sm:py-16">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+    <main className="container-base py-10 sm:py-16">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold text-white">Çalışma Listem</h1>
-          <p className="mt-2 text-slate-300">Sadece sana ait parçalar burada listelenir.</p>
+          <p className="eyebrow">Kişisel arşiv</p>
+          <h1 className="page-title mt-4 text-3xl sm:text-4xl">Çalışma listem</h1>
+          <p className="muted-copy mt-3">Sadece sana ait parçalar burada listelenir.</p>
         </div>
-        <AuthButtons authenticated />
+        <div className="sm:self-end">
+          <AuthButtons authenticated />
+        </div>
       </div>
 
       <section className="surface p-5">
-        <h2 className="text-lg font-semibold text-white">Listeye Parça Ekle</h2>
+        <h2 className="font-display text-3xl font-semibold text-text">Listeye parça ekle</h2>
         <form action={addPracticeItem} className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <select
-            name="song_id"
-            className="w-full rounded-lg border border-border bg-slate-900 px-3 py-2 text-sm"
-            required
-          >
+          <select name="song_id" className="field-input min-w-0" required>
             <option value="">Parça seç</option>
-            {(songs ?? []).map((song) => (
+            {((songs ?? []) as DashboardSong[]).map((song) => (
               <option key={song.id} value={song.id}>
                 {song.title} - {song.artist} ({songTypeLabels[song.type]})
               </option>
             ))}
           </select>
-          <button
-            type="submit"
-            className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-300"
-          >
+          <button type="submit" className="button-primary w-full py-2 sm:w-auto">
             Ekle
           </button>
         </form>
@@ -82,34 +92,30 @@ export default async function DashboardPage() {
             description="Yukarıdaki alandan bir türkü seçip çalışma listene ekleyebilirsin."
           />
         ) : (
-          (practiceItems ?? []).map((item) => {
+          ((practiceItems ?? []) as PracticeItemRow[]).map((item) => {
             const song = Array.isArray(item.songs) ? item.songs[0] : item.songs;
             if (!song) return null;
 
             return (
-              <article key={item.id} className="surface p-5">
-                <h3 className="text-lg font-semibold text-white">
-                  {song.title} <span className="text-sm text-slate-400">({song.artist})</span>
+              <article key={item.id} className="surface-alt p-5">
+                <h3 className="font-display text-3xl font-semibold text-text">
+                  {song.title} <span className="font-body text-sm text-muted">({song.artist})</span>
                 </h3>
-                <p className="mt-2 text-sm text-slate-400">Tür: {songTypeLabels[song.type]}</p>
+                <p className="mt-2 text-sm text-muted">Tür: {songTypeLabels[song.type]}</p>
 
-                <form action={updatePracticeStatus} className="mt-4 flex items-center gap-3">
+                <form
+                  action={updatePracticeStatus}
+                  className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center"
+                >
                   <input type="hidden" name="item_id" value={item.id} />
-                  <select
-                    name="status"
-                    defaultValue={item.status}
-                    className="rounded-lg border border-border bg-slate-900 px-3 py-2 text-sm"
-                  >
+                  <select name="status" defaultValue={item.status} className="field-input w-full sm:max-w-xs">
                     {statuses.map((status) => (
                       <option key={status.value} value={status.value}>
                         {status.label}
                       </option>
                     ))}
                   </select>
-                  <button
-                    type="submit"
-                    className="rounded-lg border border-border px-4 py-2 text-sm text-slate-200 hover:bg-slate-800"
-                  >
+                  <button type="submit" className="button-secondary w-full px-4 py-2 sm:w-auto">
                     Güncelle
                   </button>
                 </form>

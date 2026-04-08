@@ -6,8 +6,21 @@
   color-scheme: dark;
 }
 
+html {
+  @apply bg-base;
+}
+
 body {
-  @apply bg-base text-slate-100 antialiased;
+  @apply bg-base font-body text-text antialiased;
+  background-image:
+    radial-gradient(circle at top, rgba(143, 107, 59, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 18%),
+    linear-gradient(180deg, #0a0a0a 0%, #0d0d0d 100%);
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  @apply bg-accent text-base;
 }
 
 @layer components {
@@ -16,6 +29,38 @@ body {
   }
 
   .surface {
-    @apply rounded-2xl border border-border bg-card shadow-soft;
+    @apply rounded-xl border border-border bg-surface shadow-soft;
+  }
+
+  .surface-alt {
+    @apply rounded-xl border border-border bg-surface2 shadow-soft;
+  }
+
+  .button-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-base transition hover:bg-stone-300;
+  }
+
+  .button-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-border bg-transparent px-5 py-3 text-sm font-semibold text-text transition hover:bg-surface2;
+  }
+
+  .field-input {
+    @apply w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-sm text-text outline-none transition placeholder:text-muted focus:border-accent;
+  }
+
+  .eyebrow {
+    @apply text-xs uppercase tracking-[0.28em] text-muted;
+  }
+
+  .page-title {
+    @apply font-display text-4xl font-semibold leading-none text-text sm:text-5xl;
+  }
+
+  .section-title {
+    @apply font-display text-3xl font-semibold text-text;
+  }
+
+  .muted-copy {
+    @apply text-muted;
   }
 }
