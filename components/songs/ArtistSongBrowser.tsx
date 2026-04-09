@@ -9,12 +9,18 @@ import { Song, SongType } from '@/types/domain';
 
 type ArtistSongBrowserProps = {
   songs: Song[];
+  authMode: 'anonymous' | 'demo' | 'supabase';
+  initialPracticeSongIds?: string[];
   initialQuery?: string;
   initialType?: SongType | 'all';
 };
 
+const demoStorageKey = 'bozlaklab-demo-practice-list';
+
 export function ArtistSongBrowser({
   songs,
+  authMode,
+  initialPracticeSongIds = [],
   initialQuery = '',
   initialType = 'all',
 }: ArtistSongBrowserProps) {
@@ -22,6 +28,7 @@ export function ArtistSongBrowser({
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [typeFilter, setTypeFilter] = useState<SongType | 'all'>(initialType);
+  const [practiceSongIds, setPracticeSongIds] = useState<string[]>(initialPracticeSongIds);
 
   useEffect(() => {
     setQuery(initialQuery);
@@ -30,6 +37,40 @@ export function ArtistSongBrowser({
   useEffect(() => {
     setTypeFilter(initialType);
   }, [initialType]);
+
+  useEffect(() => {
+    setPracticeSongIds(initialPracticeSongIds);
+  }, [initialPracticeSongIds]);
+
+  useEffect(() => {
+    if (authMode !== 'demo') {
+      return;
+    }
+
+    const syncPracticeList = () => {
+      const saved = window.localStorage.getItem(demoStorageKey);
+      if (!saved) {
+        setPracticeSongIds(initialPracticeSongIds);
+        return;
+      }
+
+      try {
+        const parsedItems = JSON.parse(saved) as Array<{ song_id: string }>;
+        setPracticeSongIds(parsedItems.map((item) => item.song_id));
+      } catch {
+        setPracticeSongIds(initialPracticeSongIds);
+      }
+    };
+
+    syncPracticeList();
+    window.addEventListener('storage', syncPracticeList);
+    window.addEventListener('focus', syncPracticeList);
+
+    return () => {
+      window.removeEventListener('storage', syncPracticeList);
+      window.removeEventListener('focus', syncPracticeList);
+    };
+  }, [authMode, initialPracticeSongIds]);
 
   const filteredSongs = useMemo(() => {
     return songs.filter((song) => {
@@ -116,6 +157,7 @@ export function ArtistSongBrowser({
       <div className="mt-5">
         <PaginatedSongList
           songs={filteredSongs}
+          practiceSongIds={practiceSongIds}
           itemsPerPage={20}
           emptyTitle="Sonuç bulunamadı"
           emptyDescription="Arama ifadesini veya tür filtresini değiştirerek tekrar deneyin."

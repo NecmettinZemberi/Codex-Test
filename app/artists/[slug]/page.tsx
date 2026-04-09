@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { artists, songs } from '@/data/mockData';
 import { ArtistSongBrowser } from '@/components/songs/ArtistSongBrowser';
+import { artists, songs } from '@/data/mockData';
+import { getCurrentUserContext } from '@/utils/auth/server';
+import { createClient } from '@/utils/supabase/server';
 import type { SongType } from '@/types/domain';
 
 type ArtistPageProps = {
@@ -14,6 +16,21 @@ type ArtistPageProps = {
   };
 };
 
+type PracticeSongRow = {
+  songs:
+    | {
+        title: string;
+        artist: string;
+        type: SongType;
+      }
+    | Array<{
+        title: string;
+        artist: string;
+        type: SongType;
+      }>
+    | null;
+};
+
 function getInitialType(value?: string): SongType | 'all' {
   if (value === 'bozlak' || value === 'turku' || value === 'uzun hava') {
     return value;
@@ -22,11 +39,39 @@ function getInitialType(value?: string): SongType | 'all' {
   return 'all';
 }
 
-export default function ArtistPage({ params, searchParams }: ArtistPageProps) {
+export default async function ArtistPage({ params, searchParams }: ArtistPageProps) {
   const artist = artists.find((item) => item.slug === params.slug);
 
   if (!artist) {
     notFound();
+  }
+
+  const auth = await getCurrentUserContext();
+  let initialPracticeSongIds: string[] = [];
+
+  if (auth.mode === 'supabase' && auth.user) {
+    const supabase = await createClient();
+    const { data: practiceItems } = await supabase
+      .from('user_practice_list')
+      .select(
+        `
+        songs (title, artist, type)
+      `,
+      )
+      .eq('user_id', auth.user.id);
+
+    initialPracticeSongIds = ((practiceItems ?? []) as PracticeSongRow[])
+      .map((item) => (Array.isArray(item.songs) ? item.songs[0] : item.songs))
+      .filter((song): song is { title: string; artist: string; type: SongType } => Boolean(song))
+      .map((practiceSong) =>
+        songs.find(
+          (catalogSong) =>
+            catalogSong.title === practiceSong.title &&
+            catalogSong.artist === practiceSong.artist &&
+            catalogSong.type === practiceSong.type,
+        )?.id,
+      )
+      .filter((songId): songId is string => Boolean(songId));
   }
 
   const artistSongs = songs.filter((song) => song.artist === artist.name);
@@ -54,6 +99,8 @@ export default function ArtistPage({ params, searchParams }: ArtistPageProps) {
         <h2 className="section-title">Parçalar</h2>
         <ArtistSongBrowser
           songs={artistSongs}
+          authMode={auth.mode}
+          initialPracticeSongIds={initialPracticeSongIds}
           initialQuery={searchParams?.q ?? ''}
           initialType={getInitialType(searchParams?.type)}
         />
