@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
+import { Footer } from '@/components/layout/Footer';
 import { Navbar } from '@/components/layout/Navbar';
 import { GlobalNoticeToast } from '@/components/ui/GlobalNoticeToast';
 import { getCurrentUserContext } from '@/utils/auth/server';
@@ -38,9 +39,12 @@ export default async function RootLayout({
 
   return (
     <html lang="tr">
-      <body className={`${inter.variable} ${cormorant.variable}`}>
+      <body className={`${inter.variable} ${cormorant.variable} min-h-screen`}>
         <Navbar authMode={auth.mode} />
-        {children}
+        <div className="flex min-h-[calc(100vh-4rem)] flex-col">
+          <div className="flex-1">{children}</div>
+          <Footer />
+        </div>
         <GlobalNoticeToast />
       </body>
     </html>
