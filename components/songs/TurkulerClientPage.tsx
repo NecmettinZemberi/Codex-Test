@@ -103,6 +103,7 @@ export function TurkulerClientPage({
       <section className="mt-6">
         <PaginatedSongList
           songs={filteredSongs}
+          practiceSongIds={practiceSongIds}
           itemsPerPage={20}
           emptyTitle="Sonuç bulunamadı"
           emptyDescription="Arama kelimesini veya filtreleri değiştirerek tekrar deneyin."

@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 
 type PaginatedSongListProps = {
   songs: Song[];
+  practiceSongIds?: string[];
   itemsPerPage?: number;
   emptyTitle?: string;
   emptyDescription?: string;
@@ -30,6 +31,7 @@ function buildPageItems(currentPage: number, totalPages: number): Array<number |
 
 export function PaginatedSongList({
   songs,
+  practiceSongIds = [],
   itemsPerPage = 20,
   emptyTitle = 'Sonuç bulunamadı',
   emptyDescription = 'Arama kelimesini veya filtreleri değiştirerek tekrar deneyin.',
@@ -48,6 +50,7 @@ export function PaginatedSongList({
     return songs.slice(start, start + itemsPerPage);
   }, [itemsPerPage, safePage, songs]);
 
+  const practiceSongIdSet = useMemo(() => new Set(practiceSongIds), [practiceSongIds]);
   const pageItems = useMemo(() => buildPageItems(safePage, totalPages), [safePage, totalPages]);
 
   if (songs.length === 0) {
@@ -58,7 +61,7 @@ export function PaginatedSongList({
     <div>
       <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
         {visibleSongs.map((song) => (
-          <SongCard key={song.id} song={song} />
+          <SongCard key={song.id} song={song} isInPracticeList={practiceSongIdSet.has(song.id)} />
         ))}
       </div>
 

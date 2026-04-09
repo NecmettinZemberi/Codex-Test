@@ -109,7 +109,13 @@ async function ensureDatabaseSong(catalogSongId: string) {
   return { songId: insertedSong.id };
 }
 
-function withNotice(redirectTo: string, notice: 'added' | 'duplicate') {
+function withNotice(
+  redirectTo: string,
+  notice: 'added' | 'duplicate' | 'saved',
+  options?: {
+    savedItemId?: string;
+  },
+) {
   const safeRedirect = redirectTo.startsWith('/') ? redirectTo : '/dashboard';
   const url = new URL(safeRedirect, 'http://localhost');
   url.searchParams.set('notice', notice);
@@ -118,12 +124,17 @@ function withNotice(redirectTo: string, notice: 'added' | 'duplicate') {
     url.searchParams.set('notice_target', PRACTICE_LIST_HREF);
   }
 
+  if (notice === 'saved' && options?.savedItemId) {
+    url.searchParams.set('saved_item', options.savedItemId);
+  }
+
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
 export async function addPracticeItem(formData: FormData) {
   const catalogSongId = String(formData.get('song_id') ?? '');
   const redirectTo = String(formData.get('redirect_to') ?? '/dashboard');
+  const feedbackMode = String(formData.get('feedback_mode') ?? 'toast');
   if (!catalogSongId) return;
 
   const authUser = await getSupabaseUser();
@@ -191,6 +202,10 @@ export async function addPracticeItem(formData: FormData) {
   revalidatePath('/dashboard');
   revalidatePath('/turkuler');
   if (redirectTo.startsWith('/')) {
+    if (feedbackMode === 'inline') {
+      redirect(redirectTo);
+    }
+
     redirect(withNotice(redirectTo, 'added'));
   }
 }
@@ -200,13 +215,14 @@ export async function savePracticeItem(formData: FormData) {
   const status = String(formData.get('status') ?? 'planlandi');
   const personalNote = String(formData.get('personal_note') ?? '').trim();
   const targetDateValue = String(formData.get('target_date') ?? '').trim();
+  const redirectTo = String(formData.get('redirect_to') ?? PRACTICE_LIST_HREF);
 
   const allowed = ['planlandi', 'siraya_alindi', 'calisiliyor', 'tamamlandi'];
   if (!itemId || !allowed.includes(status)) return;
 
   const authUser = await getSupabaseUser();
   if (authUser.mode === 'demo') {
-    redirect('/dashboard?tab=practice');
+    redirect(redirectTo);
   }
 
   const { supabase, user } = authUser;
@@ -242,6 +258,7 @@ export async function savePracticeItem(formData: FormData) {
   }
 
   revalidatePath('/dashboard');
+  redirect(withNotice(redirectTo, 'saved', { savedItemId: itemId }));
 }
 
 export async function deletePracticeItem(formData: FormData) {

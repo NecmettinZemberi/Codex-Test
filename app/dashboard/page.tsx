@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { AllSongsCatalog } from '@/components/dashboard/AllSongsCatalog';
+import { PracticeSaveAction } from '@/components/dashboard/PracticeSaveAction';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { AuthButtons } from '@/components/ui/AuthButtons';
 import { PracticeBoard } from '@/components/dashboard/PracticeBoard';
@@ -372,6 +373,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
                         <form action={savePracticeItem} className="mt-5 grid gap-4">
                           <input type="hidden" name="item_id" value={item.id} />
+                          <input
+                            type="hidden"
+                            name="redirect_to"
+                            value={buildDashboardHref('practice', statusFilter)}
+                          />
 
                           <div className="grid gap-4 sm:grid-cols-2">
                             <label className="text-sm text-muted">
@@ -411,11 +417,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                             />
                           </label>
 
-                          <div className="flex justify-end">
-                            <button type="submit" className="button-primary px-5 py-2">
-                              Kaydet
-                            </button>
-                          </div>
+                          <PracticeSaveAction itemId={item.id} />
                         </form>
                       </article>
                     );
