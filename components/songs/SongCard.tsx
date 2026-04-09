@@ -3,16 +3,17 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { addPracticeItem } from '@/app/dashboard/actions';
+import { PracticeAddAction } from '@/components/songs/PracticeAddAction';
 import { ArrowUpRightIcon } from '@/components/ui/ArrowUpRightIcon';
-import { BaglamaIcon } from '@/components/ui/BaglamaIcon';
 import { getSongDetailHref, getSongHref, songTypeLabels } from '@/lib/utils';
 import { Song } from '@/types/domain';
 
 type SongCardProps = {
   song: Song;
+  isInPracticeList?: boolean;
 };
 
-export function SongCard({ song }: SongCardProps) {
+export function SongCard({ song, isInPracticeList = false }: SongCardProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentSearch = searchParams.toString();
@@ -47,15 +48,8 @@ export function SongCard({ song }: SongCardProps) {
           <form action={addPracticeItem} className="sm:flex-none">
             <input type="hidden" name="song_id" value={song.id} />
             <input type="hidden" name="redirect_to" value={redirectTo} />
-            <button
-              type="submit"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-stone-200/85 bg-stone-100 px-3.5 py-2 text-[13px] font-semibold text-stone-950 transition duration-200 hover:-translate-y-[1px] hover:border-stone-300 hover:bg-stone-200 hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] sm:w-auto"
-            >
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-stone-950 text-stone-100">
-                <BaglamaIcon />
-              </span>
-              Çalışma listeme ekle
-            </button>
+            <input type="hidden" name="feedback_mode" value="inline" />
+            <PracticeAddAction isInPracticeList={isInPracticeList} />
           </form>
 
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm sm:justify-end">

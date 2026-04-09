@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
-type NoticeKind = 'added' | 'duplicate';
+type NoticeKind = 'added' | 'duplicate' | 'saved';
 
 function getNoticeCopy(kind: NoticeKind) {
   if (kind === 'duplicate') {
@@ -15,6 +15,17 @@ function getNoticeCopy(kind: NoticeKind) {
       tone:
         'border-amber-700/60 bg-[radial-gradient(circle_at_top_left,rgba(217,119,6,0.16),transparent_40%),linear-gradient(180deg,rgba(24,24,24,0.98),rgba(10,10,10,0.98))] text-stone-50',
       dot: 'bg-amber-300',
+    };
+  }
+
+  if (kind === 'saved') {
+    return {
+      label: 'Çalışma listesi',
+      title: 'Parça güncellendi',
+      message: 'Durum, tarih ve not değişikliklerin başarıyla kaydedildi.',
+      tone:
+        'border-emerald-700/65 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_40%),linear-gradient(180deg,rgba(22,22,22,0.98),rgba(8,8,8,0.98))] text-stone-50',
+      dot: 'bg-emerald-300',
     };
   }
 
@@ -38,7 +49,7 @@ export function GlobalNoticeToast() {
   const noticeTarget = searchParams.get('notice_target');
 
   const copy = useMemo(() => {
-    if (notice !== 'added' && notice !== 'duplicate') {
+    if (notice !== 'added' && notice !== 'duplicate' && notice !== 'saved') {
       return null;
     }
 
@@ -49,6 +60,7 @@ export function GlobalNoticeToast() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('notice');
     params.delete('notice_target');
+    params.delete('saved_item');
     const next = params.toString();
     router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
   };
