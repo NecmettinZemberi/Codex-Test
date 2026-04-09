@@ -5,6 +5,7 @@ import { BaglamaIcon } from '@/components/ui/BaglamaIcon';
 
 type PracticeAddActionProps = {
   isInPracticeList: boolean;
+  idleLabel?: string;
 };
 
 function CheckIcon() {
@@ -35,7 +36,10 @@ function SpinnerIcon() {
   );
 }
 
-export function PracticeAddAction({ isInPracticeList }: PracticeAddActionProps) {
+export function PracticeAddAction({
+  isInPracticeList,
+  idleLabel = 'Çalışma listeme ekle',
+}: PracticeAddActionProps) {
   const { pending } = useFormStatus();
 
   const buttonClass = pending
@@ -57,7 +61,7 @@ export function PracticeAddAction({ isInPracticeList }: PracticeAddActionProps) 
       >
         {pending ? <SpinnerIcon /> : isInPracticeList ? <CheckIcon /> : <BaglamaIcon />}
       </span>
-      <span>{pending ? 'Ekleniyor...' : isInPracticeList ? 'Eklendi' : 'Çalışma listeme ekle'}</span>
+      <span>{pending ? 'Ekleniyor...' : isInPracticeList ? 'Eklendi' : idleLabel}</span>
     </button>
   );
 }

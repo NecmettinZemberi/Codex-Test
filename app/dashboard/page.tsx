@@ -236,6 +236,28 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
     return left.artist.localeCompare(right.artist, 'tr');
   });
+  const practiceSongIds = practiceItems
+    .map((item) => (Array.isArray(item.songs) ? item.songs[0] : item.songs))
+    .filter(
+      (
+        song,
+      ): song is {
+        id: string;
+        title: string;
+        artist: string;
+        type: SongType;
+      } => Boolean(song),
+    )
+    .map(
+      (practiceSong) =>
+        catalogSongs.find(
+          (catalogSong) =>
+            catalogSong.title === practiceSong.title &&
+            catalogSong.artist === practiceSong.artist &&
+            catalogSong.type === practiceSong.type,
+        )?.id,
+    )
+    .filter((songId): songId is string => Boolean(songId));
 
   return (
     <main className="container-base py-10 sm:py-16">
@@ -266,6 +288,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           {activeTab === 'all-songs' ? (
             <AllSongsCatalog
               songs={catalogSongs}
+              practiceSongIds={practiceSongIds}
               addAction={addPracticeItem}
               redirectTo={buildDashboardHref('all-songs')}
             />

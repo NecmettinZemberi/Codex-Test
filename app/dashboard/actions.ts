@@ -162,6 +162,10 @@ export async function addPracticeItem(formData: FormData) {
     .limit(1);
 
   if ((existingItem?.length ?? 0) > 0) {
+    if (feedbackMode === 'inline' && redirectTo.startsWith('/')) {
+      redirect(redirectTo);
+    }
+
     redirect(withNotice(redirectTo, 'duplicate'));
   }
 
