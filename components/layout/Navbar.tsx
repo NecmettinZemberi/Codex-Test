@@ -5,16 +5,12 @@ import { FormEvent, useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { artists, songs } from '@/data/mockData';
 import { SongSearchSuggestions } from '@/components/songs/SongSearchSuggestions';
+import { headerNavigation } from '@/lib/site';
 import { getSearchHref, getSongHref } from '@/lib/utils';
 
 type NavbarProps = {
   authMode?: 'anonymous' | 'demo' | 'supabase';
 };
-
-const navLinks = [
-  { label: 'Türküler', href: '/turkuler' },
-  { label: 'Sanatçılar', href: '/artists' },
-];
 
 const authHref = '/login';
 
@@ -240,7 +236,7 @@ export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
                 </form>
 
                 <div className="space-y-2">
-                  {navLinks.map((link) => (
+                  {headerNavigation.map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}
@@ -290,7 +286,7 @@ export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
           </Link>
 
           <div className="flex items-center gap-5">
-            {navLinks.map((link) => (
+            {headerNavigation.map((link) => (
               <Link key={link.href} href={link.href} className={getLinkClass(pathname, link.href)}>
                 {link.label}
               </Link>
