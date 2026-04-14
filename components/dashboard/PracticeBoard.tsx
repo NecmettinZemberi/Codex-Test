@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { BaglamaIcon } from '@/components/ui/BaglamaIcon';
 import { songs } from '@/data/mockData';
 import {
   getSongById,
   getSongDetailHref,
+  formatSongTitle,
   songTypeLabels,
   statusClasses,
   statusLabels,
@@ -103,9 +103,10 @@ export function PracticeBoard({
   const filteredItems = useMemo(() => {
     return orderedItems.filter((item) => statusFilter === 'all' || item.status === statusFilter);
   }, [orderedItems, statusFilter]);
+  const itemSongIdSet = useMemo(() => new Set(items.map((item) => item.song_id)), [items]);
 
   const addSong = () => {
-    if (!selectedSongId || items.some((item) => item.song_id === selectedSongId)) {
+    if (!selectedSongId || itemSongIdSet.has(selectedSongId)) {
       return;
     }
 
@@ -161,57 +162,90 @@ export function PracticeBoard({
 
   if (activeTab === 'all-songs') {
     return (
-      <section className="surface p-5">
-        <h2 className="font-display text-3xl font-semibold text-text">Tüm parçalar</h2>
-        <p className="mt-3 text-sm leading-6 text-muted">
-          Demo katalogdan dilediğin parçayı seçip çalışma listene yerel olarak ekleyebilirsin.
-        </p>
+      <section className="surface overflow-hidden">
+        <div className="border-b border-border/80 p-5 sm:p-6">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+            <div>
+              <p className="eyebrow text-accent">Katalog</p>
+              <h2 className="mt-3 font-display text-3xl font-semibold text-text">Tüm parçalar</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
+                Demo katalogdan dilediğin parçayı seçip çalışma listene yerel olarak ekleyebilirsin.
+              </p>
+            </div>
 
-        <div className="mt-5 grid gap-4 lg:grid-cols-2">
-          {sortedSongs.map((song) => (
-            <article key={song.id} className="rounded-xl border border-border bg-surface2 p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="font-display text-2xl font-semibold text-text">
-                    <Link href={getSongDetailHref(song)} className="transition hover:text-accent">
-                      {song.title}
-                    </Link>
-                  </h3>
-                  <p className="mt-2 text-sm text-muted">
-                    {song.artist} · {songTypeLabels[song.type]}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    setSelectedSongId(song.id);
-                    if (!items.some((item) => item.song_id === song.id)) {
-                      const now = new Date().toISOString();
-                      setItems((prev) => [
-                        ...prev,
-                        {
-                          id: `local-${crypto.randomUUID()}`,
-                          user_id: 'demo-user',
-                          song_id: song.id,
-                          status: 'planlandi',
-                          sort_order: prev.length + 1,
-                          personal_note: '',
-                          target_date: null,
-                          created_at: now,
-                          updated_at: now,
-                        },
-                      ]);
-                    }
-                  }}
-                  className="inline-flex items-center gap-2 rounded-lg border border-stone-200/85 bg-stone-100 px-3.5 py-2 text-[13px] font-semibold text-stone-950 transition duration-200 hover:-translate-y-[1px] hover:border-stone-300 hover:bg-stone-200 hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)]"
-                >
-                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-stone-950 text-stone-100">
-                    <BaglamaIcon />
-                  </span>
-                  Ekle
-                </button>
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+              <div className="rounded-lg border border-border/80 bg-surface2/60 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-[0.16em] text-muted">Sıralama</p>
+                <p className="mt-1 text-sm font-semibold text-text">Alfabetik</p>
               </div>
-            </article>
-          ))}
+              <div className="rounded-lg border border-border/80 bg-surface2/60 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-[0.16em] text-muted">Sonuç</p>
+                <p className="mt-1 text-sm font-semibold text-text">
+                  {sortedSongs.length} parça
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-3 p-5 sm:p-6 lg:grid-cols-2">
+          {sortedSongs.map((song) => {
+            const isInPracticeList = itemSongIdSet.has(song.id);
+
+            return (
+              <article
+                key={song.id}
+                className="group rounded-xl border border-border/85 bg-surface2/70 p-4 transition-all duration-300 ease-out hover:border-accent/30 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.012))] hover:shadow-[0_18px_42px_rgba(0,0,0,0.18)]"
+              >
+                <div className="flex h-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <h3 className="font-display text-[1.55rem] font-semibold leading-tight text-text">
+                      <Link
+                        href={getSongDetailHref(song)}
+                        className="transition-colors duration-300 ease-out hover:text-accent"
+                      >
+                        {formatSongTitle(song.title)}
+                      </Link>
+                    </h3>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="rounded-lg border border-border/80 bg-base/25 px-2.5 py-1 text-xs text-stone-300">
+                        {song.artist}
+                      </span>
+                      <span className="rounded-lg border border-border/80 bg-base/25 px-2.5 py-1 text-xs text-muted">
+                        {songTypeLabels[song.type]}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedSongId(song.id);
+                      if (!isInPracticeList) {
+                        const now = new Date().toISOString();
+                        setItems((prev) => [
+                          ...prev,
+                          {
+                            id: `local-${crypto.randomUUID()}`,
+                            user_id: 'demo-user',
+                            song_id: song.id,
+                            status: 'planlandi',
+                            sort_order: prev.length + 1,
+                            personal_note: '',
+                            target_date: null,
+                            created_at: now,
+                            updated_at: now,
+                          },
+                        ]);
+                      }
+                    }}
+                    disabled={isInPracticeList}
+                    className="inline-flex w-full min-w-[112px] items-center justify-center rounded-lg border border-accent/35 bg-accent/10 px-5 py-2.5 text-sm font-semibold text-stone-100 transition-all duration-300 ease-out hover:border-accent/65 hover:bg-accent/18 hover:text-white hover:shadow-[0_14px_34px_rgba(143,107,59,0.14)] active:bg-accent/14 disabled:cursor-default disabled:border-emerald-500/45 disabled:bg-emerald-500/10 disabled:text-emerald-100 disabled:shadow-[0_10px_28px_rgba(16,185,129,0.09)] sm:w-auto"
+                  >
+                    {isInPracticeList ? 'Eklendi' : 'Ekle'}
+                  </button>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
     );
@@ -259,7 +293,7 @@ export function PracticeBoard({
             >
               {sortedSongs.map((song) => (
                 <option key={song.id} value={song.id}>
-                  {song.title} - {song.artist} ({songTypeLabels[song.type]})
+                  {formatSongTitle(song.title)} - {song.artist} ({songTypeLabels[song.type]})
                 </option>
               ))}
             </select>
@@ -307,7 +341,7 @@ export function PracticeBoard({
                 <div>
                   <h3 className="font-display text-3xl font-semibold text-text">
                     <Link href={getSongDetailHref(song)} className="transition hover:text-accent">
-                      {song.title}
+                      {formatSongTitle(song.title)}
                     </Link>{' '}
                     <span className="font-body text-sm text-muted">({song.artist})</span>
                   </h3>

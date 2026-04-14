@@ -19,6 +19,18 @@ export const siteNavigation: SiteNavItem[] = [
     showInHeader: true,
   },
   {
+    href: '/yeni-baslayanlar',
+    label: 'Yeni Başlayanlar',
+    showInFooter: true,
+    showInHeader: true,
+  },
+  {
+    href: '/tavrin-temelleri',
+    label: 'Tavrın Temelleri',
+    showInFooter: true,
+    showInHeader: true,
+  },
+  {
     href: '/artists',
     label: 'Sanatçılar',
     showInFooter: true,

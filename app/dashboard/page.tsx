@@ -7,6 +7,7 @@ import { AuthButtons } from '@/components/ui/AuthButtons';
 import { PracticeBoard } from '@/components/dashboard/PracticeBoard';
 import { songs as catalogSongs, mockPracticeList } from '@/data/mockData';
 import {
+  formatSongTitle,
   getSongDetailHref,
   songTypeLabels,
   statusClasses,
@@ -310,7 +311,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                       <option value="">Parça seç</option>
                       {sortedCatalogSongs.map((song) => (
                         <option key={song.id} value={song.id}>
-                          {song.title} - {song.artist} ({songTypeLabels[song.type]})
+                          {formatSongTitle(song.title)} - {song.artist} ({songTypeLabels[song.type]})
                         </option>
                       ))}
                     </select>
@@ -368,7 +369,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                           <div>
                             <h3 className="font-display text-3xl font-semibold text-text">
                               <Link href={getSongDetailHref(song)} className="transition hover:text-accent">
-                                {song.title}
+                                {formatSongTitle(song.title)}
                               </Link>{' '}
                               <span className="font-body text-sm text-muted">({song.artist})</span>
                             </h3>

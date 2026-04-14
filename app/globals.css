@@ -188,4 +188,35 @@ body {
   .baglama-string-loader__string animate {
     display: none;
   }
+
+  .search-hint-caret {
+    animation: none;
+  }
+}
+
+@keyframes search-hint-caret {
+  0%,
+  46% {
+    opacity: 0.72;
+  }
+
+  47%,
+  100% {
+    opacity: 0.12;
+  }
+}
+
+.search-hint-typing {
+  display: inline-flex;
+  align-items: center;
+}
+
+.search-hint-caret {
+  margin-left: 0.15rem;
+  display: inline-block;
+  height: 1em;
+  width: 1px;
+  flex: 0 0 auto;
+  background: rgb(214 211 209 / 0.68);
+  animation: search-hint-caret 920ms steps(1, end) infinite;
 }
