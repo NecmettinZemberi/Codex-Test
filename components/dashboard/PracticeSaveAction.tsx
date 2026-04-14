@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useFormStatus } from 'react-dom';
+import { BaglamaStringLoader } from '@/components/ui/BaglamaStringLoader';
 
 type PracticeSaveActionProps = {
   itemId: string;
@@ -17,20 +18,6 @@ function CheckIcon() {
         strokeWidth="1.9"
         strokeLinecap="round"
         strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function SpinnerIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-4 w-4 animate-spin">
-      <circle cx="10" cy="10" r="7" className="opacity-25" stroke="currentColor" strokeWidth="2" />
-      <path
-        d="M10 3a7 7 0 0 1 7 7"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
       />
     </svg>
   );
@@ -96,7 +83,7 @@ export function PracticeSaveAction({ itemId }: PracticeSaveActionProps) {
         disabled={pending}
         className={`inline-flex min-w-[154px] items-center justify-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-semibold transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:cursor-wait disabled:translate-y-0 ${buttonClass}`}
       >
-        {pending ? <SpinnerIcon /> : saved ? <CheckIcon /> : null}
+        {pending ? <BaglamaStringLoader size="compact" label="Kaydediliyor" /> : saved ? <CheckIcon /> : null}
         <span>{pending ? 'Kaydediliyor...' : saved ? 'Kaydedildi' : 'Kaydet'}</span>
       </button>
     </div>

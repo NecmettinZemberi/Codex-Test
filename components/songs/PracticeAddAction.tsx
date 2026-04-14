@@ -2,6 +2,7 @@
 
 import { useFormStatus } from 'react-dom';
 import { BaglamaIcon } from '@/components/ui/BaglamaIcon';
+import { BaglamaStringLoader } from '@/components/ui/BaglamaStringLoader';
 
 type PracticeAddActionProps = {
   isInPracticeList: boolean;
@@ -17,20 +18,6 @@ function CheckIcon() {
         strokeWidth="1.9"
         strokeLinecap="round"
         strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function SpinnerIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-4 w-4 animate-spin">
-      <circle cx="10" cy="10" r="7" className="opacity-25" stroke="currentColor" strokeWidth="2" />
-      <path
-        d="M10 3a7 7 0 0 1 7 7"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
       />
     </svg>
   );
@@ -59,7 +46,13 @@ export function PracticeAddAction({
           pending || isInPracticeList ? 'bg-emerald-100/15 text-current' : 'bg-stone-950 text-stone-100'
         }`}
       >
-        {pending ? <SpinnerIcon /> : isInPracticeList ? <CheckIcon /> : <BaglamaIcon />}
+        {pending ? (
+          <BaglamaStringLoader size="compact" label="Ekleniyor" />
+        ) : isInPracticeList ? (
+          <CheckIcon />
+        ) : (
+          <BaglamaIcon />
+        )}
       </span>
       <span>{pending ? 'Ekleniyor...' : isInPracticeList ? 'Eklendi' : idleLabel}</span>
     </button>
