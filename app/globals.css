@@ -68,8 +68,9 @@ body {
 @layer components {
   .baglama-string-loader {
     --string-width: min(72rem, 92vw);
-    --string-gap: 1rem;
-    --string-color: rgba(230, 216, 190, 0.78);
+    --string-gap: 0.46rem;
+    --string-color: rgba(224, 230, 226, 0.84);
+    --string-wound-color: rgba(218, 171, 92, 0.92);
     --string-shadow: rgba(192, 150, 85, 0.2);
     display: inline-flex;
     min-height: clamp(10rem, 28vh, 18rem);
@@ -101,14 +102,66 @@ body {
     opacity: var(--string-opacity);
   }
 
-  .baglama-string-loader__string path {
+  .baglama-string-loader__string--group-gap {
+    margin-top: 0.72rem;
+  }
+
+  .baglama-string-loader__string-core,
+  .baglama-string-loader__string-wrap {
     fill: none;
     stroke: currentColor;
-    stroke-width: 0.9;
+    stroke-width: var(--string-core-width, 0.76);
     stroke-linecap: round;
     stroke-linejoin: round;
     vector-effect: non-scaling-stroke;
     filter: drop-shadow(0 0 4px var(--string-shadow));
+  }
+
+  .baglama-string-loader__string-wrap {
+    stroke: var(--string-wound-color);
+    stroke-width: var(--string-wrap-width, 1.2);
+    stroke-dasharray: 1 2.6;
+    stroke-linecap: butt;
+    opacity: 0.82;
+  }
+
+  .baglama-string-loader__string--steel-fine {
+    color: rgba(226, 234, 232, 0.9);
+    --string-core-width: 0.68;
+  }
+
+  .baglama-string-loader__string--steel-thick .baglama-string-loader__string-core {
+    stroke-width: 1.55;
+  }
+
+  .baglama-string-loader__string--steel-thick {
+    color: rgba(230, 236, 232, 0.95);
+  }
+
+  .baglama-string-loader__string--wound-fine {
+    color: rgba(184, 138, 72, 0.76);
+    --string-core-width: 1.05;
+    --string-wrap-width: 1.36;
+  }
+
+  .baglama-string-loader__string--wound-medium {
+    color: rgba(196, 151, 82, 0.82);
+    --string-core-width: 1.34;
+    --string-wrap-width: 1.72;
+  }
+
+  .baglama-string-loader__string--wound-thick {
+    color: rgba(205, 157, 85, 0.9);
+    --string-core-width: 1.82;
+    --string-wrap-width: 2.28;
+  }
+
+  .baglama-string-loader__string--wound-thick .baglama-string-loader__string-wrap {
+    stroke-dasharray: 1.4 2.2;
+  }
+
+  .baglama-string-loader__string--wound-medium .baglama-string-loader__string-wrap {
+    stroke-dasharray: 1.2 2.5;
   }
 
   .baglama-string-loader--compact .baglama-string-loader__string {
@@ -116,9 +169,18 @@ body {
     opacity: 0.72;
   }
 
-  .baglama-string-loader--compact .baglama-string-loader__string path {
+  .baglama-string-loader--compact .baglama-string-loader__string--group-gap {
+    margin-top: 0.08rem;
+  }
+
+  .baglama-string-loader--compact .baglama-string-loader__string-core,
+  .baglama-string-loader--compact .baglama-string-loader__string-wrap {
     stroke-width: 1;
     filter: none;
+  }
+
+  .baglama-string-loader--compact .baglama-string-loader__string-wrap {
+    display: none;
   }
 }
 
