@@ -67,64 +67,63 @@ body {
 
 @layer components {
   .baglama-string-loader {
-    --string-width: 8rem;
-    --string-gap: 0.34rem;
-    --string-color: rgba(231, 220, 198, 0.78);
-    --string-glow: rgba(143, 107, 59, 0.22);
+    --string-width: min(42rem, 82%);
+    --string-gap: 0.64rem;
+    --string-color: rgba(224, 211, 186, 0.74);
+    --string-shadow: rgba(192, 150, 85, 0.16);
     display: inline-flex;
-    min-height: 1.5rem;
-    width: var(--string-width);
+    min-height: 3.2rem;
+    width: 100%;
     align-items: center;
     justify-content: center;
     color: var(--string-color);
   }
 
   .baglama-string-loader--compact {
-    --string-width: 1rem;
-    --string-gap: 0.16rem;
+    --string-width: 1.1rem;
+    --string-gap: 0.08rem;
     min-height: 1rem;
+    width: 1.1rem;
   }
 
   .baglama-string-loader__strings {
     display: grid;
-    width: 100%;
+    width: var(--string-width);
     gap: var(--string-gap);
   }
 
   .baglama-string-loader__string {
     display: block;
-    height: 1px;
+    height: 0.42rem;
     width: 100%;
     transform-origin: center;
-    animation: baglama-string-drift 1.4s ease-in-out infinite;
-    animation-delay: calc(var(--string-index) * 120ms);
-    background:
-      linear-gradient(90deg, transparent 0%, currentColor 18%, currentColor 82%, transparent 100%),
-      linear-gradient(90deg, transparent 0%, var(--string-glow) 50%, transparent 100%);
-    opacity: 0.55;
+    overflow: visible;
+    opacity: var(--string-opacity);
+  }
+
+  .baglama-string-loader__string path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 0.74;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+    filter: drop-shadow(0 0 3px var(--string-shadow));
   }
 
   .baglama-string-loader--compact .baglama-string-loader__string {
+    height: 0.12rem;
     opacity: 0.72;
   }
-}
 
-@keyframes baglama-string-drift {
-  0%,
-  100% {
-    transform: translateX(-5%) scaleX(0.88);
-    opacity: 0.38;
-  }
-
-  50% {
-    transform: translateX(5%) scaleX(1);
-    opacity: 0.9;
+  .baglama-string-loader--compact .baglama-string-loader__string path {
+    stroke-width: 1;
+    filter: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .baglama-string-loader__string {
-    animation: none;
-    opacity: 0.72;
+  .baglama-string-loader__string animate {
+    display: none;
   }
 }
