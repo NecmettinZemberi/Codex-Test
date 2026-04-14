@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 type NoticeKind = 'added' | 'duplicate' | 'saved';
 
@@ -56,14 +56,14 @@ export function GlobalNoticeToast() {
     return getNoticeCopy(notice);
   }, [notice]);
 
-  const clearNotice = () => {
+  const clearNotice = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('notice');
     params.delete('notice_target');
     params.delete('saved_item');
     const next = params.toString();
     router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
-  };
+  }, [pathname, router, searchParams]);
 
   useEffect(() => {
     if (!copy) {
@@ -78,7 +78,7 @@ export function GlobalNoticeToast() {
     }, 3800);
 
     return () => window.clearTimeout(timeout);
-  }, [copy]);
+  }, [clearNotice, copy]);
 
   if (!copy) {
     return null;

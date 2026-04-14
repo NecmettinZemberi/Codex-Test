@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { PaginationControls } from '@/components/songs/PaginationControls';
 import { songs } from '@/data/mockData';
 import {
   getSongById,
@@ -48,6 +49,8 @@ export function PracticeBoard({
   const [items, setItems] = useState(initialItems);
   const [selectedSongId, setSelectedSongId] = useState(sortedSongs[0]?.id ?? '');
   const [statusFilter, setStatusFilter] = useState<PracticeStatus | 'all'>(initialStatusFilter);
+  const [catalogCurrentPage, setCatalogCurrentPage] = useState(1);
+  const [catalogItemsPerPage, setCatalogItemsPerPage] = useState(20);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(storageKey);
@@ -104,6 +107,17 @@ export function PracticeBoard({
     return orderedItems.filter((item) => statusFilter === 'all' || item.status === statusFilter);
   }, [orderedItems, statusFilter]);
   const itemSongIdSet = useMemo(() => new Set(items.map((item) => item.song_id)), [items]);
+  const catalogTotalPages = Math.max(1, Math.ceil(sortedSongs.length / catalogItemsPerPage));
+
+  useEffect(() => {
+    setCatalogCurrentPage(1);
+  }, [catalogItemsPerPage]);
+
+  const paginatedCatalogSongs = useMemo(() => {
+    const startIndex = (catalogCurrentPage - 1) * catalogItemsPerPage;
+
+    return sortedSongs.slice(startIndex, startIndex + catalogItemsPerPage);
+  }, [catalogCurrentPage, catalogItemsPerPage]);
 
   const addSong = () => {
     if (!selectedSongId || itemSongIdSet.has(selectedSongId)) {
@@ -189,7 +203,7 @@ export function PracticeBoard({
         </div>
 
         <div className="grid gap-3 p-5 sm:p-6 lg:grid-cols-2">
-          {sortedSongs.map((song) => {
+          {paginatedCatalogSongs.map((song) => {
             const isInPracticeList = itemSongIdSet.has(song.id);
 
             return (
@@ -246,6 +260,17 @@ export function PracticeBoard({
               </article>
             );
           })}
+        </div>
+
+        <div className="px-5 pb-5 sm:px-6 sm:pb-6">
+          <PaginationControls
+            currentPage={catalogCurrentPage}
+            totalPages={catalogTotalPages}
+            totalItems={sortedSongs.length}
+            itemsPerPage={catalogItemsPerPage}
+            onItemsPerPageChange={setCatalogItemsPerPage}
+            onPageChange={setCatalogCurrentPage}
+          />
         </div>
       </section>
     );

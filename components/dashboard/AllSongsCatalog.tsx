@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { PaginationControls } from '@/components/songs/PaginationControls';
 import { PracticeAddAction } from '@/components/songs/PracticeAddAction';
 import { formatSongTitle, getSongDetailHref, normalizeForSearch, songTypeLabels } from '@/lib/utils';
 import type { Song, SongType } from '@/types/domain';
@@ -22,6 +23,8 @@ export function AllSongsCatalog({
   const [query, setQuery] = useState('');
   const [artistFilter, setArtistFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState<SongType | 'all'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const artists = useMemo(
     () =>
@@ -56,6 +59,22 @@ export function AllSongsCatalog({
         return matchesQuery && matchesArtist && matchesType;
       });
   }, [artistFilter, query, songs, typeFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredSongs.length / itemsPerPage));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [artistFilter, itemsPerPage, query, typeFilter]);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  const paginatedSongs = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+
+    return filteredSongs.slice(startIndex, startIndex + itemsPerPage);
+  }, [currentPage, filteredSongs, itemsPerPage]);
 
   return (
     <section className="surface overflow-hidden">
@@ -141,7 +160,7 @@ export function AllSongsCatalog({
       </div>
 
       <div className="grid gap-3 p-5 sm:p-6 lg:grid-cols-2">
-        {filteredSongs.map((song) => (
+        {paginatedSongs.map((song) => (
           <article
             key={song.id}
             className="group rounded-xl border border-border/85 bg-surface2/70 p-4 transition-all duration-300 ease-out hover:border-accent/30 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.012))] hover:shadow-[0_18px_42px_rgba(0,0,0,0.18)]"
@@ -184,6 +203,19 @@ export function AllSongsCatalog({
       {filteredSongs.length === 0 ? (
         <div className="mx-5 mb-5 rounded-xl border border-border bg-surface2/60 p-6 text-sm text-muted sm:mx-6 sm:mb-6">
           Bu filtrelerle eşleşen parça bulunamadı.
+        </div>
+      ) : null}
+
+      {filteredSongs.length > 0 ? (
+        <div className="px-5 pb-5 sm:px-6 sm:pb-6">
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredSongs.length}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={setItemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       ) : null}
     </section>

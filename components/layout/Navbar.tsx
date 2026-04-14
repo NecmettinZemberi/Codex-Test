@@ -223,7 +223,7 @@ export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
           <button
             type="button"
             aria-expanded={menuOpen}
-            aria-controls="mobile-menu"
+            aria-controls={menuOpen ? 'mobile-menu' : undefined}
             aria-label={menuOpen ? 'Menüyü kapat' : 'Menüyü aç'}
             onClick={() => setMenuOpen((current) => !current)}
             className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-surface2/70 transition hover:bg-surface2"
@@ -259,20 +259,14 @@ export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
           </div>
         </div>
 
-        <div
-          id="mobile-menu"
-          aria-hidden={!menuOpen}
-          className={`absolute inset-x-0 top-full z-[90] bg-base/80 backdrop-blur-[2px] transition duration-300 md:hidden ${
-            menuOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
-          }`}
-        >
-          <div className="container-base py-4">
-            <div
-              className={`flex h-[calc(100dvh-4rem-1px)] max-h-[calc(100dvh-4rem-1px)] flex-col overflow-hidden rounded-2xl border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0)),linear-gradient(180deg,#121212,#181818)] shadow-soft transition duration-300 ease-out ${
-                menuOpen ? 'translate-y-0 scale-100' : '-translate-y-3 scale-[0.985]'
-              }`}
-            >
-              <div className="overflow-y-auto overscroll-contain px-5 pb-5 pt-5">
+        {menuOpen ? (
+          <div
+            id="mobile-menu"
+            className="absolute inset-x-0 top-full z-[90] bg-base/80 backdrop-blur-[2px] transition duration-300 md:hidden"
+          >
+            <div className="container-base py-4">
+              <div className="flex h-[calc(100dvh-4rem-1px)] max-h-[calc(100dvh-4rem-1px)] flex-col overflow-hidden rounded-2xl border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0)),linear-gradient(180deg,#121212,#181818)] shadow-soft transition duration-300 ease-out">
+                <div className="overflow-y-auto overscroll-contain px-5 pb-5 pt-5">
                 <div className="mb-5 flex items-end justify-between gap-4 border-b border-border pb-4">
                   <div>
                     <p className="eyebrow">Gezinme</p>
@@ -367,11 +361,11 @@ export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
                     Tüm sanatçılar burada listelendi.
                   </p>
                 </div>
+                </div>
               </div>
-
             </div>
           </div>
-        </div>
+        ) : null}
 
         <div className="hidden py-3 lg:block">
           <div className="flex items-center gap-4">
