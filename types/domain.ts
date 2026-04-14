@@ -20,8 +20,10 @@ export type Song = {
   artist: string;
   type: SongType;
   youtube_url: string;
+  slow_play_youtube_url?: string | null;
   lyrics_or_notes: string;
   difficulty?: 'kolay' | 'orta' | 'zor';
+  beginner_order?: number | null;
   created_at: string;
 };
 

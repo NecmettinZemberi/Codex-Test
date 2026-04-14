@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { addPracticeItem } from '@/app/dashboard/actions';
 import { PracticeAddAction } from '@/components/songs/PracticeAddAction';
 import { ArrowUpRightIcon } from '@/components/ui/ArrowUpRightIcon';
-import { getSongDetailHref, getSongHref, songTypeLabels } from '@/lib/utils';
+import { formatSongTitle, getSongDetailHref, getSongHref, songTypeLabels } from '@/lib/utils';
 import { Song } from '@/types/domain';
 
 type SongCardProps = {
@@ -24,7 +24,7 @@ export function SongCard({ song, isInPracticeList = false }: SongCardProps) {
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="font-display text-2xl font-semibold leading-none text-text">
           <Link href={getSongDetailHref(song)} className="transition hover:text-accent">
-            {song.title}
+            {formatSongTitle(song.title)}
           </Link>
         </h3>
         <span className="rounded-full border border-border px-2 py-1 text-[11px] uppercase tracking-[0.18em] text-muted">

@@ -13,13 +13,104 @@ type NavbarProps = {
 };
 
 const authHref = '/login';
+const animatedSearchSongs = songs
+  .filter((song) => song.artist === 'Neşet Ertaş')
+  .slice(0, 10)
+  .map((song) => song.title);
+
+const typingSpeedMs = 64;
+const deletingSpeedMs = 34;
+const typedHoldMs = 1050;
+const deletedHoldMs = 180;
+
+type SearchHintPhase = 'typing' | 'deleting';
+
+function useTypingSearchHint(items: string[]) {
+  const [itemIndex, setItemIndex] = useState(0);
+  const [visibleChars, setVisibleChars] = useState(0);
+  const [phase, setPhase] = useState<SearchHintPhase>('typing');
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const updateMotionPreference = () => {
+      setPrefersReducedMotion(mediaQuery.matches);
+    };
+
+    updateMotionPreference();
+    mediaQuery.addEventListener('change', updateMotionPreference);
+
+    return () => {
+      mediaQuery.removeEventListener('change', updateMotionPreference);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!items.length) {
+      return;
+    }
+
+    const currentItem = items[itemIndex] ?? '';
+
+    if (prefersReducedMotion) {
+      setVisibleChars(currentItem.length);
+      setPhase('typing');
+      return;
+    }
+
+    let timeoutId: number;
+
+    if (phase === 'typing') {
+      timeoutId = window.setTimeout(() => {
+        if (visibleChars < currentItem.length) {
+          setVisibleChars((current) => Math.min(current + 1, currentItem.length));
+          return;
+        }
+
+        setPhase('deleting');
+      }, visibleChars < currentItem.length ? typingSpeedMs : typedHoldMs);
+    } else {
+      timeoutId = window.setTimeout(() => {
+        if (visibleChars > 0) {
+          setVisibleChars((current) => Math.max(current - 1, 0));
+          return;
+        }
+
+        setItemIndex((current) => (current + 1) % items.length);
+        setPhase('typing');
+      }, visibleChars > 0 ? deletingSpeedMs : deletedHoldMs);
+    }
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [itemIndex, items, phase, prefersReducedMotion, visibleChars]);
+
+  return (items[itemIndex] ?? '').slice(0, visibleChars);
+}
+
+function SearchInputHint({ text }: { text: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute left-3 top-1/2 z-10 flex max-w-[calc(100%-3rem)] -translate-y-1/2 items-center gap-2 overflow-hidden text-sm text-muted"
+    >
+      <span className="shrink-0">Türkü ara:</span>
+      <span className="search-hint-typing min-w-0 truncate text-text/78">
+        {text}
+        <span className="search-hint-caret" />
+      </span>
+    </span>
+  );
+}
 
 function getLinkClass(pathname: string, href: string) {
   const isActive = pathname === href || pathname.startsWith(`${href}/`);
 
   return isActive
-    ? 'text-sm text-text'
-    : 'text-sm text-muted transition hover:text-text';
+    ? 'whitespace-nowrap rounded-lg border border-accent/50 bg-accent/10 px-3 py-2 text-sm font-medium text-text'
+    : 'whitespace-nowrap rounded-lg border border-transparent px-3 py-2 text-sm text-muted transition hover:border-border/80 hover:bg-surface2/70 hover:text-text';
 }
 
 function AuthArea({ authMode }: { authMode: NavbarProps['authMode'] }) {
@@ -88,6 +179,7 @@ export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [desktopQuery, setDesktopQuery] = useState('');
   const [mobileQuery, setMobileQuery] = useState('');
+  const searchHintText = useTypingSearchHint(animatedSearchSongs);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -206,9 +298,10 @@ export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
                       <input
                         value={mobileQuery}
                         onChange={(event) => setMobileQuery(event.target.value)}
-                        className="field-input pr-10"
-                        placeholder="Türkü adı yaz"
+                        className="field-input pr-10 placeholder:text-transparent"
+                        placeholder="Türkü ara"
                       />
+                      {!mobileQuery ? <SearchInputHint text={searchHintText} /> : null}
                       {mobileQuery ? (
                         <button
                           type="button"
@@ -280,63 +373,80 @@ export function Navbar({ authMode = 'anonymous' }: NavbarProps) {
           </div>
         </div>
 
-        <div className="hidden min-h-[4.5rem] items-center gap-6 py-4 lg:grid lg:grid-cols-[auto_auto_minmax(320px,420px)_auto]">
-          <Link href="/" className="font-display text-4xl font-semibold leading-none text-text">
-            BozlakLab
-          </Link>
+        <div className="hidden py-3 lg:block">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="font-display text-4xl font-semibold leading-none text-text">
+              BozlakLab
+            </Link>
 
-          <div className="flex items-center gap-5">
-            {headerNavigation.map((link) => (
-              <Link key={link.href} href={link.href} className={getLinkClass(pathname, link.href)}>
-                {link.label}
-              </Link>
-            ))}
+            <form
+              onSubmit={(event) => handleSearch(event, desktopQuery)}
+              className="min-w-0 flex-1"
+            >
+              <label className="sr-only" htmlFor="global-song-search">
+                Türkü ara
+              </label>
+
+              <div className="relative">
+                <div className="flex items-center gap-2">
+                  <div className="relative min-w-0 flex-1">
+                    <input
+                      id="global-song-search"
+                      value={desktopQuery}
+                      onChange={(event) => setDesktopQuery(event.target.value)}
+                      className="field-input h-10 pr-10 placeholder:text-transparent"
+                      placeholder="Türkü ara"
+                    />
+                    {!desktopQuery ? (
+                      <SearchInputHint text={searchHintText} />
+                    ) : null}
+                    {desktopQuery ? (
+                      <button
+                        type="button"
+                        onClick={() => setDesktopQuery('')}
+                        aria-label="Aramayı temizle"
+                        className="absolute right-3 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-base text-muted transition hover:bg-surface2 hover:text-text"
+                      >
+                        ×
+                      </button>
+                    ) : null}
+                  </div>
+                  <button type="submit" className="button-secondary h-10 shrink-0 px-4 py-2">
+                    Ara
+                  </button>
+                </div>
+
+                <SongSearchSuggestions
+                  songs={songs}
+                  query={desktopQuery}
+                  onSelect={(song) => {
+                    setDesktopQuery(song.title);
+                    router.push(getSongHref(song));
+                  }}
+                />
+              </div>
+            </form>
+
+            <div className="shrink-0">
+              <AuthArea authMode={authMode} />
+            </div>
           </div>
 
-          <form onSubmit={(event) => handleSearch(event, desktopQuery)} className="w-full">
-            <label className="sr-only" htmlFor="global-song-search">
-              Türkü ara
-            </label>
-
-            <div className="relative">
-              <div className="flex items-center gap-2">
-                <div className="relative min-w-0 flex-1">
-                  <input
-                    id="global-song-search"
-                    value={desktopQuery}
-                    onChange={(event) => setDesktopQuery(event.target.value)}
-                    className="field-input pr-10"
-                    placeholder="Türkü ara"
-                  />
-                  {desktopQuery ? (
-                    <button
-                      type="button"
-                      onClick={() => setDesktopQuery('')}
-                      aria-label="Aramayı temizle"
-                      className="absolute right-3 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-base text-muted transition hover:bg-surface2 hover:text-text"
-                    >
-                      ×
-                    </button>
-                  ) : null}
-                </div>
-                <button type="submit" className="button-secondary shrink-0 px-4 py-2">
-                  Ara
-                </button>
-              </div>
-
-              <SongSearchSuggestions
-                songs={songs}
-                query={desktopQuery}
-                onSelect={(song) => {
-                  setDesktopQuery(song.title);
-                  router.push(getSongHref(song));
-                }}
-              />
+          <div className="mt-3 flex items-center justify-between gap-4 border-t border-border/70 pt-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {headerNavigation.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={getLinkClass(pathname, link.href)}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
-          </form>
-
-          <div className="justify-self-end">
-            <AuthArea authMode={authMode} />
+            <p className="hidden text-xs leading-5 text-muted xl:block">
+              Söz, tavır ve yavaş çalım odaklı çalışma alanı.
+            </p>
           </div>
         </div>
       </nav>

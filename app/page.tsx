@@ -28,16 +28,20 @@ export default async function HomePage() {
             Neşet Ertaş tavrı saz çalışmak için sade ve güçlü bir başlangıç.
           </h1>
           <p className="mt-6 max-w-3xl text-base leading-8 text-stone-200">
-            Bu platform, halk müziği sanatçılarını ve eserlerini tek yerde toplar. Giriş yapan
-            kullanıcılar kendi çalışma listelerini oluşturabilir, sıraya koyabilir ve ilerleme
-            durumlarını takip edebilir.
+            BozlakLab; türkü arşivini, parça sözleriyle çalışmayı, yavaş çalım bağlantılarını,
+            yeni başlayan rotasını ve Neşet Ertaş tavrının temel prensiplerini aynı yerde toplar.
+            Giriş yapan kullanıcılar ayrıca kendi çalışma listelerini oluşturup ilerleme durumlarını
+            takip edebilir.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href={auth.isAuthenticated ? '/turkuler' : '/login'} className="button-primary">
               {auth.isAuthenticated ? 'Türküler' : 'Giriş yap'}
             </Link>
-            <Link href="/dashboard" className="button-secondary">
-              Çalışma listeme git
+            <Link href="/yeni-baslayanlar" className="button-secondary">
+              Yeni Başlayanlar
+            </Link>
+            <Link href="/tavrin-temelleri" className="button-secondary">
+              Tavrın Temelleri
             </Link>
           </div>
         </div>

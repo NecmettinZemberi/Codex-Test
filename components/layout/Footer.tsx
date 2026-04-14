@@ -26,9 +26,9 @@ export function Footer() {
             BozlakLab
           </h2>
           <p className="mt-4 max-w-4xl text-sm leading-7 text-stone-300 sm:text-[15px]">
-            Bozlak geleneğini, halk müziği repertuvarını ve disiplinli çalışma kültürünü dijital
-            ortamda erişilebilir kılan; not, repertuvar ve araştırma akışlarını aynı yerde
-            buluşturan yaşayan bir arşiv ve çalışma alanı olarak gelişiyor.
+            Bozlak geleneğini, halk müziği repertuvarını ve saz öğrenme kültürünü dijital ortamda
+            erişilebilir kılan; söz, yavaş çalım, tavır notları ve kişisel çalışma akışlarını aynı
+            yerde buluşturan yaşayan bir arşiv olarak gelişiyor.
           </p>
         </section>
       </div>

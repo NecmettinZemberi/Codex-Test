@@ -20,6 +20,19 @@ function isTargetDateSchemaCacheError(error: { code?: string; message?: string }
   );
 }
 
+function isSongLearningSchemaCacheError(error: { code?: string; message?: string } | null) {
+  if (!error) {
+    return false;
+  }
+
+  const message = (error.message ?? '').toLowerCase();
+
+  return (
+    error.code === 'PGRST204' &&
+    (message.includes('slow_play_youtube_url') || message.includes('beginner_order'))
+  );
+}
+
 async function getSupabaseUser() {
   const auth = await getCurrentUserContext();
 
@@ -87,19 +100,40 @@ async function ensureDatabaseSong(catalogSongId: string) {
     return { error: 'catalog_sync_required' as const };
   }
 
-  const { data: insertedSong, error: insertSongError } = await admin
+  let { data: insertedSong, error: insertSongError } = await admin
     .from('songs')
     .insert({
       title: catalogSong.title,
       artist: catalogSong.artist,
       type: catalogSong.type,
       youtube_url: catalogSong.youtube_url,
+      slow_play_youtube_url: catalogSong.slow_play_youtube_url ?? null,
       lyrics_or_notes: catalogSong.lyrics_or_notes,
       difficulty: catalogSong.difficulty ?? null,
+      beginner_order: catalogSong.beginner_order ?? null,
       created_at: catalogSong.created_at,
     })
     .select('id')
     .single();
+
+  if (isSongLearningSchemaCacheError(insertSongError)) {
+    const retry = await admin
+      .from('songs')
+      .insert({
+        title: catalogSong.title,
+        artist: catalogSong.artist,
+        type: catalogSong.type,
+        youtube_url: catalogSong.youtube_url,
+        lyrics_or_notes: catalogSong.lyrics_or_notes,
+        difficulty: catalogSong.difficulty ?? null,
+        created_at: catalogSong.created_at,
+      })
+      .select('id')
+      .single();
+
+    insertedSong = retry.data;
+    insertSongError = retry.error;
+  }
 
   if (insertSongError || !insertedSong) {
     console.error('catalog sync failed', insertSongError);
@@ -262,7 +296,7 @@ export async function savePracticeItem(formData: FormData) {
   }
 
   revalidatePath('/dashboard');
-  redirect(withNotice(redirectTo, 'saved', { savedItemId: itemId }));
+  redirect(redirectTo.startsWith('/') ? redirectTo : PRACTICE_LIST_HREF);
 }
 
 export async function deletePracticeItem(formData: FormData) {

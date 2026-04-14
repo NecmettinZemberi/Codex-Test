@@ -17,10 +17,18 @@ create table if not exists public.songs (
   artist text not null,
   type text not null check (type in ('bozlak', 'turku', 'uzun hava')),
   youtube_url text not null,
+  slow_play_youtube_url text,
   lyrics_or_notes text not null,
   difficulty text check (difficulty in ('kolay', 'orta', 'zor')),
+  beginner_order integer,
   created_at timestamptz not null default now()
 );
+
+alter table public.songs
+  add column if not exists slow_play_youtube_url text;
+
+alter table public.songs
+  add column if not exists beginner_order integer;
 
 create table if not exists public.user_practice_list (
   id uuid primary key default gen_random_uuid(),

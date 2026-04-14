@@ -1,7 +1,7 @@
 'use client';
 
 import { Song } from '@/types/domain';
-import { getSongSuggestions, normalizeForSearch } from '@/lib/utils';
+import { formatSongTitle, getSongSuggestions, normalizeForSearch } from '@/lib/utils';
 
 type SongSearchSuggestionsProps = {
   songs: Song[];
@@ -34,7 +34,7 @@ export function SongSearchSuggestions({
             onClick={() => onSelect(song)}
             className="flex w-full flex-col rounded-lg px-3 py-3 text-left transition hover:bg-surface2"
           >
-            <span className="text-sm font-medium text-text">{song.title}</span>
+            <span className="text-sm font-medium text-text">{formatSongTitle(song.title)}</span>
             <span className="mt-1 text-xs uppercase tracking-[0.14em] text-muted">
               {song.artist}
             </span>

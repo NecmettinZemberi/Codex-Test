@@ -51,7 +51,7 @@ export function SongFilters({
               value={query}
               onChange={(event) => onQueryChange(event.target.value)}
               className="field-input pr-10"
-              placeholder="Örn. Neredesin"
+              placeholder="Örn. Ağla Sazım"
             />
             {query ? (
               <button

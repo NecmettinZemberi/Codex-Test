@@ -1,5 +1,6 @@
 import { artists, songs } from '@/data/mockData';
 import { PracticeStatus, Song, SongType } from '@/types/domain';
+export { formatSongTitle } from '@/lib/text';
 
 export const statusLabels: Record<PracticeStatus, string> = {
   planlandi: 'Planlandı',

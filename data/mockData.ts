@@ -1,4 +1,5 @@
 import { Artist, Song, UserPracticeItem } from '@/types/domain';
+import { formatSongTitle } from '@/lib/text';
 
 const defaultCreatedAt = '2026-04-07T00:00:00Z';
 
@@ -402,17 +403,50 @@ const songSeed: Array<[artist: string, title: string]> = [
   ['Neşet Ertaş', 'Sabreyle gönül'],
 ];
 
-export const songs: Song[] = songSeed.map(([artist, title], index) => ({
-  id: `s${index + 1}`,
-  title,
-  artist,
-  type: 'turku',
-  youtube_url: `https://www.youtube.com/results?search_query=${encodeURIComponent(
-    `${artist} ${title}`,
-  )}`,
-  lyrics_or_notes: 'Notlar daha sonra eklenecek.',
-  created_at: defaultCreatedAt,
-}));
+const beginnerOrderByTitle: Record<string, number> = {
+  'Gönül Dağı': 1,
+  Zahidem: 2,
+  'Kendim Ettim Kendim Buldum': 3,
+  'Tatlı Dile Güler Yüze': 4,
+  'Neredesin Sen': 5,
+  'Yalan Dünya': 6,
+  'Açma Zülüflerin': 7,
+  'Gönül Ne Gezersin': 8,
+  'Allı Turnam': 9,
+  'Kar Yağar Kar Üstüne': 10,
+};
+
+const studyNotesByTitle: Record<string, string> = {
+  'Gönül Dağı':
+    'Söz çalışması: İlk kıta buraya eklenecek. Çalışırken söz vurgularını saz cümleleriyle birlikte takip et.',
+  Zahidem:
+    'Söz çalışması: İlk kıta buraya eklenecek. Sağ el vuruşlarını kısa ve net tutarak sözün aksanını dinle.',
+  'Kendim Ettim Kendim Buldum':
+    'Söz çalışması: İlk kıta buraya eklenecek. Sol elde baskıyı güçlü tutup geçişleri acele etmeden çalış.',
+  'Tatlı Dile Güler Yüze':
+    'Söz çalışması: İlk kıta buraya eklenecek. Mızrap sesini kısaltıp telden temiz tını almaya odaklan.',
+};
+
+export const songs: Song[] = songSeed.map(([artist, title], index) => {
+  const formattedTitle = formatSongTitle(title);
+
+  return {
+    id: `s${index + 1}`,
+    title: formattedTitle,
+    artist,
+    type: 'turku',
+    youtube_url: `https://www.youtube.com/results?search_query=${encodeURIComponent(
+      `${artist} ${formattedTitle}`,
+    )}`,
+    slow_play_youtube_url: null,
+    lyrics_or_notes:
+      studyNotesByTitle[formattedTitle] ??
+      'Söz çalışması ve ilk kıta notları yakında eklenecek.',
+    beginner_order:
+      artist === 'Neşet Ertaş' ? beginnerOrderByTitle[formattedTitle] ?? null : null,
+    created_at: defaultCreatedAt,
+  };
+});
 
 export const mockPracticeList: UserPracticeItem[] = [
   {
